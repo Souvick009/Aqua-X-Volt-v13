@@ -1,0 +1,22 @@
+{
+  "name": "axv",
+  "version": "2.9.8",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ascii-table": "^0.0.9",
+    "common-tags": "^1.8.0",
+    "discord.js": "^13.1.0",
+    "moment": "^2.29.1",
+    "mongoose": "^6.0.6",
+    "ms": "^3.0.0-canary.1",
+    "utils-discord": "^2.0.0",
+    "uuidv4": "^6.2.12",
+    "youtubei": "^0.0.1-rc.27"
+  }
+}
