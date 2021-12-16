@@ -63,7 +63,6 @@ module.exports = {
             }
         }
 
-        console.log(memberUser)
         var hexes;
         if (member) {
             hexes = member.displayHexColor

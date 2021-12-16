@@ -91,11 +91,12 @@ module.exports = {
             embed1.setFooter(message.author.tag, message.author.displayAvatarURL())
             embed1.setTimestamp()
             const embed2 = new Discord.MessageEmbed();
-            try {
-                bot.users.cache.get(member.id).send({ embeds: [embed1] })
-            } catch (error) {
+            await bot.users.cache.get(member.id).send({
+                embeds: [embed1]
+            }).catch(error => {
                 console.log(error)
-            }
+            });
+            
             // await bot.users.cache.get(member.id).send({ embeds: [embed1] }).catch(error => {
             //     // Only log the error if the user's dm is off
             //     if (error) {

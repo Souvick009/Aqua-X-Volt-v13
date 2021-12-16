@@ -87,7 +87,7 @@ module.exports = {
 
         if (!reason) return message.reply("You didn't specify a reason!");
 
-        
+
         // console.log(time)
         var muterole = message.guild.roles.cache.find(role => role.name === 'Muted');
 
@@ -199,11 +199,13 @@ module.exports = {
                     const embed420 = new Discord.MessageEmbed()
                     embed420.setColor(0x00FFFF)
                     embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been muted for ${time} in ${message.guild.name}*** | **${reason}**`);
-                    try {
-                        bot.users.cache.get(person).send({embeds: [embed420]});
-                    } catch (error) {
+
+                    await bot.users.cache.get(person.id).send({
+                        embeds: [embed420]
+                    }).catch(error => {
                         console.log(error)
-                    }
+                    });
+
                     // console.log(time)
                     setTimeout(async () => {
                         var guildMember = message.guild.members.fetch(person.id).catch(error => console.log(error))
