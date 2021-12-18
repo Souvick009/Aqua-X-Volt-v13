@@ -59,7 +59,7 @@ module.exports = {
             try {
                 memberUser = member.user
             } catch (error) {
-                return message.reply("Invalid user!")
+                return message.channel.send(`<@${message.author.id}>, Invalid User!`);
             }
         }
 

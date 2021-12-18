@@ -40,9 +40,9 @@ module.exports = {
                 } else {
                     member = message.mentions.members.first() || await message.guild.members.fetch(args[0]).catch(error => console.log())
                 }
-                if (!member) return message.reply("Invalid User!");
+                if (!member) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
             } catch (error) {
-                if (!member) return message.reply("Invalid User!");
+                if (!member) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
             }
         } else {
             if (!member) return message.channel.send(`<@${message.author.id}> , You Need To Mention A User!`);

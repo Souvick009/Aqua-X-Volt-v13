@@ -54,9 +54,9 @@ module.exports = {
                     rmember = message.mentions.members.first() || message.guild.members.cache.find(m => m.user.tag === args[0]) || await message.guild.members.fetch(args[0])
                 }
                 rmember = message.mentions.members.first() || message.guild.members.cache.find(m => m.user.tag === args[0]) || await message.guild.members.fetch(args[0])
-                if (!rmember) return message.reply("Invalid User!");
+                if (!rmember) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
             } catch (error) {
-                if (!rmember) return message.reply("Invalid User!");
+                if (!rmember) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
             }
         } else {
             if (!rmember) return message.channel.send("Please provide a user to add a role!")
