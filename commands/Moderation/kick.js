@@ -68,7 +68,7 @@ module.exports = {
             const embed1 = new Discord.MessageEmbed()
             embed1.setColor(0xFF0000)
             embed1.setDescription("❌ You can not kick an Admin.This person seems to be an Admin of this server.")
-            return message.channel.send({ embeds: [embed1] }).then(m => setTimeout(() => m.delete(), 15000));
+            return message.channel.send({ embeds: [embed1] }).then(m => setTimeout(() => m.delete().catch(error => console.log(error)), 15000));
         }
         //defining member who will get a warn and fetching id of him so member will be id of user mentioned
 

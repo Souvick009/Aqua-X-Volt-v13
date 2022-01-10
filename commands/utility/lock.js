@@ -52,6 +52,8 @@ module.exports = {
                 return message.reply(`Max Limit is 7 days`)
             }
 
+            if (!channel) message.reply("Channel not found!")
+
             if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return message.reply(`❌ I don't have Manage Channels permission in <#${channel.id}>!`)
             if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return message.channel.send("Cannot lock an already locked channel")
             channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, { SEND_MESSAGES: false }).then(() => {

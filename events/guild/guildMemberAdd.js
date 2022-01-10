@@ -1,4 +1,4 @@
-module.exports = (bot, Discord, Server, serverUser,youtube, member) => {
+module.exports = (bot, Discord, Server, serverUser, youtube, member) => {
         serverUser.findOne({
                 muteStatus: "Muted",
                 serverID: member.guild.id,
@@ -9,15 +9,28 @@ module.exports = (bot, Discord, Server, serverUser,youtube, member) => {
 
                 if (!user) return;
                 var latestMute = user.mutes[user.mutes.length - 1]
-                console.log(latestMute.duration + latestMute.date > Date.now())
-                if (latestMute.duration + latestMute.date > Date.now()) {
+                if (latestMute.duration !== "perm") {
+                        if (latestMute.duration + latestMute.date > Date.now()) {
+                                var g = bot.guilds.cache.get(user.serverID)
+                                try {
+                                        var u = await g.members.fetch(user.userID)
+                                } catch (error) {
+                                        return
+                                }
+                                var muterole = g.roles.cache.find(role => role.name === 'Muted');
+                                u.roles.add(muterole)
+                        }
+                } else if (latestMute.duration === "perm") {
                         var g = bot.guilds.cache.get(user.serverID)
-                        // console.log(`g ` + g)
-                        var u = await g.members.fetch(user.userID)
+                        try {
+                                var u = await g.members.fetch(user.userID)
+                        } catch (error) {
+                                // console.log(error)
+                                return
+                        }
                         var muterole = g.roles.cache.find(role => role.name === 'Muted');
-                        u.roles.add(muterole)
-                        var remainingTime = Date.now() - latestMute.duration + latestMute.date
-                        // console.log(`remaining ` + remainingTime)
+                        if (u.roles.cache.some(r => r.name === "Muted")) return
+                        u.roles.add(muterole).catch(error => console.log(error))
                 }
         })
 }

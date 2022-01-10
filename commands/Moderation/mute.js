@@ -198,7 +198,7 @@ module.exports = {
                     message.channel.send({ embeds: [embed99] });
                     const embed420 = new Discord.MessageEmbed()
                     embed420.setColor(0x00FFFF)
-                    embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been muted for ${time} in ${message.guild.name}*** | **${reason}**`);
+                    embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been muted for ${ms(time)} in ${message.guild.name}*** | **${reason}**`);
 
                     await bot.users.cache.get(person.id).send({
                         embeds: [embed420]

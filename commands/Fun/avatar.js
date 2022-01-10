@@ -86,7 +86,7 @@ module.exports = {
         }
 
 
-        msg.delete();
+        msg.delete().catch(error => console.log(error));
     }
 
 

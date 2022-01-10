@@ -77,9 +77,11 @@ module.exports = (bot, Discord, Server, serverUser, youtube) => {
                 try {
                     var u = await g.members.fetch(user.userID)
                 } catch (error) {
-                    return console.log(error)
+                    // console.log(error)
+                    return
                 }
                 var muterole = g.roles.cache.find(role => role.name === 'Muted');
+                if (u.roles.cache.some(r => r.name === "Muted")) return
                 u.roles.add(muterole).catch(error => console.log(error))
             }
         })

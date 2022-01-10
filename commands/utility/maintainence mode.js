@@ -65,13 +65,15 @@ module.exports = {
                         } catch (error) {
                             return message.channel.send({ content: `I don't have permission to edit any channels` })
                         }
-
+                        var hmm = false
                         message.guild.channels.cache.filter(c => c.permissionsFor(message.guild.me).has(["MANAGE_CHANNELS", "MANAGE_PERMISSIONS"]) == true).forEach(async (channel, id) => {
+                            if (!channel || !channel.permissionOverwrites) hmm = true
                             await channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
                                 VIEW_CHANNEL: false
                             }).catch(error => console.log(error))
                         });
 
+                        if (hmm == true) return message.channel.send(`Something went wrong! Please check my permissions or try this command after giving admin perm`)
                         data.mModeChannels = allChannels
                         await data.save().catch(e => console.log(e));
                         return message.reply(`Maintainance-mode is now on for this server. All channels are now private,you should make a channel public for members!`)

@@ -35,9 +35,10 @@ module.exports = {
             channel = message.channel
         } else {
             channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0])
-            if (!channel) message.reply("Channel not found!")
         }
 
+        if (!channel) message.reply("Channel not found!")
+        
         if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return message.reply(`❌ I don't have Manage Channels permission in <#${channel.id}>!`)
 
         if (channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return message.channel.send("Cannot unlock an already unlocked channel")

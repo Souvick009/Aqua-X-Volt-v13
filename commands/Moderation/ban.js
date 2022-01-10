@@ -68,7 +68,7 @@ module.exports = {
                     embed.setDescription("❌ You can not ban an Admin.This person seems to be an Admin of this server.")
                     return message.channel.send({
                         embeds: [embed]
-                    }).then(m => setTimeout(() => m.delete(), 15000));
+                    }).then(m => setTimeout(() => m.delete().catch(error => console.log(error)), 15000));
                 }
             }
         }

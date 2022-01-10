@@ -65,7 +65,7 @@ module.exports = {
         const iddd = uuid()
         const reason = args.slice(1).join(" ");
 
-        if (member.permissions.has(perms.ADMINISTRATOR)) return message.channel.send(`<@${message.author.id}> , ❌ You can not warn an Admin. This person seems to be an Admin of this server.`).then(m => setTimeout(() => m.delete(), 5000));
+        if (member.permissions.has(perms.ADMINISTRATOR)) return message.channel.send(`<@${message.author.id}> , ❌ You can not warn an Admin. This person seems to be an Admin of this server.`).then(m => setTimeout(() => m.delete().catch(error => console.log(error)), 5000));
 
         if (!reason) return message.channel.send(`<@${message.author.id}> , You didn't specify a reason!`).then(m => setTimeout(() => m.delete(), 5000));
 
