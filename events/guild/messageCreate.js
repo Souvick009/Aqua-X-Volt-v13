@@ -32,6 +32,12 @@ module.exports = async (bot, Discord, Server, serverUser, youtube, message) => {
                 //length of prefix will be removed from arg if message doesnt starts with bot ping
                 args = message.content.slice(prefix.length).trim().split(/ +/g);
             }
+
+            if (args[0].toLowerCase() == "servers") {
+                if (message.author.id === "530054630131105794" || message.author.id === "603508758626435072") {
+                    message.reply(`Currently on ${bot.guilds.cache.size} Servers`)
+                }
+            }
             //rest is the same code
             const cmd = args.shift().toLowerCase();
             if (cmd.length === 0) return;

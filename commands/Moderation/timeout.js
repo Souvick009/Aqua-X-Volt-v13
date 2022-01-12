@@ -9,7 +9,7 @@ const getMember = require("../../utils/getMember.js");
 module.exports = {
     name: "timeout",
     aliases: [],
-    accessableby: "Manage Messages",
+    accessableby: "Manage Messages, Timeout Members",
     description: "Mute a member so they cannot type or speak.",
     category: "Moderation",
     usage: "=timeout <user/userid> <limit> [reason]",
