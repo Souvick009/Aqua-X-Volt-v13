@@ -1,6 +1,8 @@
 const Discord = require("discord.js");
+const send = require("../../utils/sendMessage.js")
 
 module.exports = {
+
     name: "invite",
     aliases: [],
     accessableby: "everyone",
@@ -10,10 +12,11 @@ module.exports = {
     cooldown: 5,
     category: "Info",
     permission: [""],
-    botreq: "",
+    botreq: [],
+
     run: async (bot, message, args) => {
 
-        message.reply({ content: `https://discord.com/api/oauth2/authorize?client_id=721460877005422634&permissions=414397754615&scope=bot` })
+       send(message,`https://discord.com/api/oauth2/authorize?client_id=721460877005422634&permissions=1392039259222&scope=bot%20applications.commands`)
 
     }
 

@@ -4,6 +4,8 @@ const ms = require('ms');
 const server = require("../../model/server.js")
 const moment = require('moment')
 const Utils = require("utils-discord");
+const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "modlogs",
@@ -15,7 +17,8 @@ module.exports = {
     example: "=modlogs",
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links",
-    run: async (bot, message, args) => {
+    run: async (bot, message, args, options, author) => {
+
 
         const embed = new Discord.MessageEmbed()
 
@@ -27,9 +30,7 @@ module.exports = {
             if (!users || users.length == 0) {
                 embed.setColor(0xFF0000)
                 embed.setDescription("❌ Currently No Muted Users!")
-                return message.channel.send({
-                    embeds: [embed]
-                });
+                return send(message, { embeds: [embed] }, false);
 
             }
             // let currentlyMuted = user.map(e => `${message.guild.members.cache.get(e.userID).user} -> ${ms(e.mutes[e.mutes.length - 1].date + e.mutes[e.mutes.length - 1].duration - Date.now(), { long: true })} Remaining`);
@@ -39,9 +40,7 @@ module.exports = {
             if (!filteredUsers || filteredUsers.length == 0) {
                 embed.setColor(0xFF0000)
                 embed.setDescription("❌ Currently No Muted Users!")
-                return message.channel.send({
-                    embeds: [embed]
-                });
+                return send(message, { embeds: [embed] }, false);
             }
 
             // var currentMembers = filteredUsers.filter(async function(user) {
@@ -72,15 +71,15 @@ module.exports = {
             })
             await Utils.delay(1500);
             // console.log(toSend)
-            let options = {
+            let options2 = {
                 title: "Moderation Logs",
                 color: "0x39dafa",
                 args: args[0],
                 buttons: true,
                 thumbnail: message.guild.iconURL(),
-                perpage: 5
+                perpage: 10
             }
-            Utils.createEmbedPages(bot, message, toSend, options)
+            Utils.createEmbedPages(bot, message, toSend, options2, author)
 
         })
     }

@@ -1,4 +1,4 @@
-module.exports = (bot, Discord, Server, serverUser, youtube) => {
+module.exports = async (bot, Discord, Server, serverUser, youtube) => {
 
     console.log(`${bot.user.username} is Online!`);
     // bot.guilds.cache.forEach(guild => {
@@ -17,17 +17,17 @@ module.exports = (bot, Discord, Server, serverUser, youtube) => {
     }, async (err, users) => {
         if (err) console.log(err);
         if (!users || users.length == 0) return;
-
         users.forEach(async (user) => {
             var latestMute = user.mutes[user.mutes.length - 1]
             if (latestMute.duration !== "perm") {
                 // agar duration Permanent nahi hua toh
                 if (latestMute.duration + latestMute.date < Date.now()) {
                     // agar muted duration over hogya ho toh
-                    var g = bot.guilds.cache.get(user.serverID)
+                    var g = await bot.guilds.fetch(user.serverID)
+                    // console.log(user.serverID + `\n next xD \n` + g)
                     try {
-                        var u = await g.members.fetch(user.userID)
                         // console.log(user.userID)
+                        var u = await g.members.fetch(user.userID)
                     } catch (error) {
                         user.muteStatus = "Unmuted"
                         await user.save().catch(e => console.log(e));
@@ -73,11 +73,13 @@ module.exports = (bot, Discord, Server, serverUser, youtube) => {
                 }
             } else if (latestMute.duration === "perm") {
                 // agar duration Permanent hua toh
-                var g = bot.guilds.cache.get(user.serverID)
+                // console.log(user.serverID)
+                var g = await bot.guilds.fetch(user.serverID)
+                // console.log(g.members)
                 try {
                     var u = await g.members.fetch(user.userID)
+                    // console.log(u)
                 } catch (error) {
-                    // console.log(error)
                     return
                 }
                 var muterole = g.roles.cache.find(role => role.name === 'Muted');
@@ -88,53 +90,41 @@ module.exports = (bot, Discord, Server, serverUser, youtube) => {
     })
 
 
-    async function subCounter() {
-        bot.guilds.cache.forEach(guild => {
-            Server.findOne({
-                serverID: guild.id
-            }, async (err, data) => {
-                if (err) console.log(err);
-                if (!data) return
-                if (data.length == 0) return
-                if (!data.subCounterChannel || data.subCounterChannel == "") return
-                try {
-                    var channel = await bot.channels.fetch(data.subCounterChannel)
-                } catch (error) {
-                    data.subCounterChannel = ""
-                    data.ytChannel = ""
-                    await data.save().catch(e => console.log(e));
-                    return
-                }
+    // async function subCounter() {
+    //     bot.guilds.cache.forEach(guild => {
+    //         Server.findOne({
+    //             serverID: guild.id
+    //         }, async (err, data) => {
+    //             if (err) console.log(err);
+    //             if (!data) return
+    //             if (data.length == 0) return
+    //             if (!data.subCounterChannel || data.subCounterChannel == "") return
+    //             try {
+    //                 var channel = await bot.channels.fetch(data.subCounterChannel)
+    //             } catch (error) {
+    //                 data.subCounterChannel = ""
+    //                 data.ytChannel = ""
+    //                 await data.save().catch(e => console.log(e));
+    //                 return
+    //             }
 
-                var yt = data.ytChannel
-                var channelName = channel.name
+    //             var yt = data.ytChannel
+    //             var channelName = channel.name
 
-                const searchChannel = await youtube.search(yt, {
-                    type: "channel", // video | playlist | channel | all
-                });
+    //             const searchChannel = await youtube.search(yt, {
+    //                 type: "channel", // video | playlist | channel | all
+    //             });
 
-                var totalSubs;
-                try {
-                    totalSubs = await searchChannel[0].subscriberCount
-                } catch (error) {
-                    return
-                }
+    //             let totalSubs = await searchChannel[0].subscriberCount
 
+    //             let subs = totalSubs.split(" ")[0]
 
-                let subs;
+    //             var name = channelName.split(" ")[0]
+    //             channel.edit({ name: `${name} ${subs}` })
+    //                 .catch(console.error);
+    //         })
+    //     })
+    // }
 
-                try {
-                    subs = totalSubs.split(" ")[0]
-                } catch (error) {
-                    return
-                }
-
-                var name = channelName.split(" ")[0]
-                channel.edit({ name: `${name} ${subs}` })
-                    .catch(console.error);
-            })
-        })
-    }
-
-    setInterval(subCounter, 1800000)
+    // setInterval(subCounter, 1800000)
 }

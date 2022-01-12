@@ -2,8 +2,10 @@ const serverUser = require("../../model/serverUser.js")
 const Discord = require("discord.js");
 const ms = require('ms');
 const server = require("../../model/server.js")
-
 const moment = require('moment')
+const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js");
+
 module.exports = {
     name: "unmute",
     aliases: [],
@@ -14,81 +16,82 @@ module.exports = {
     example: "=unmute @Real Warrior , =unmute @Yashu , =unmute @Shander ",
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links, Manage Roles, Manage Messages",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "user",
+        description: "User to be unmuted",
+        required: true,
+        type: 6, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    }, {
+        name: "reason",
+        description: "Reason why the user is getting unmuted?",
+        required: false,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "reason"
+    }],
+    run: async (bot, message, args, options, author) => {
 
         if (!message.guild.me.permissions.has(["MANAGE_ROLES"])) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ Check My Permissions. [Missing Permission:- Manage Roles]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
         if (!message.guild.me.permissions.has(["MANAGE_MESSAGES"])) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ Check My Permissions. [Missing Permission:- Manage Messages]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_MESSAGES")) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ I don't have permission in this channel! [Missing Permission:- Manage Messages]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
-
-        await message.delete().catch(error => console.log(error))
 
         var embed = new Discord.MessageEmbed()
 
-        var person;
-        var mention = args[0];
-        if (args[0]) {
-            try {
-                if (message.mentions.repliedUser) {
-                    if (mention.startsWith('<@') && mention.endsWith('>')) {
-                        mention = mention.slice(2, -1);
+        var person = await getMember(bot, args, options, message, author, false, false, 0, false)
 
-                        if (mention.startsWith('!')) {
-                            mention = mention.slice(1);
-                        }
-                        person = await message.guild.members.fetch(mention)
-                    } else {
-                        person = message.mentions.members.get(Array.from(message.mentions.members.keys())[1]) || await message.guild.members.fetch(args[0]).catch(error => console.log())
-                    }
-                } else {
-                    person = message.mentions.members.first() || await message.guild.members.fetch(args[0]).catch(error => console.log())
-                }
-                if (!person) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            } catch (error) {
-                if (!person) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            }
-        } else {
-            if (!person) return message.channel.send(`<@${message.author.id}> , You Need To Mention A User!`);
-        }
+        if (!person) return;
 
-
-        let reason = args.slice(1).join(" ")
+        let reason = options[1]
         if (!reason) {
             reason = "none"
         }
 
         let muterole = message.guild.roles.cache.find(role => role.name === 'Muted');
         const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
-        if (!botrole) return message.channel.send(`<@${message.author.id}>, It seems that my role isn't assigned to me, re-invite me to fix it or make a role named "Aqua X Volt" and assign it to me.`)
+        if (!botrole) return send(message, {
+            content: `It seems that my role isn't assigned to me, re-invite me to fix it or make a role named "Aqua X Volt (Beta testing)" and assign it to me.`,
+            ephemeral: true
+        }, true)
+
         if (muterole.rawPosition > botrole.rawPosition) {
             embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to remove a role from the user!")
             embed.setColor(0xff4a1f)
-            return await message.channel.send({
-                embeds: [embed]
-            })
-
+            return send({
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
-        if (!muterole) return message.channel.send("Couldn't find the mute role");
+        if (!muterole) return send(message, { content: "Couldn't find the mute role" }, true);
         // console.log(person.roles.cache.some(r => r.name === "Muted"))
 
-        if (!person.roles.cache.some(r => r.name === "Muted")) return message.channel.send(`<@${message.author.id}>,` + " The user is already unmuted")
+        if (!person.roles.cache.some(r => r.name === "Muted")) return send(message, { content: "The user is already unmuted" }, true)
 
         serverUser.findOne({
             serverID: message.guild.id,
@@ -106,7 +109,7 @@ module.exports = {
                 var muteObj;
 
                 var muteObj = {
-                    administrator: message.author.tag,
+                    administrator: author.tag,
                     reason: reason,
                     type: "Unmute",
                     date: Date.now(),
@@ -122,17 +125,17 @@ module.exports = {
                 } else {
                     embed.setDescription(`<:Bluecheckmark:754538270028726342> **${person.user.tag} has been unmuted!** | ***${reason}***`);
                 }
-                message.channel.send({
+                send(message, {
                     embeds: [embed]
-                })
+                }, false)
             } else if (user) {
                 if (user.muteStatus === "Unmuted" && !person.roles.cache.some(r => r.name === "Muted")) {
-                    return message.channel.send(`<@${message.author.id}>,` + " The user is already unmuted")
+                    return send(message, { content: "The user is already unmuted" }, true)
                 } else {
                     var muteObj;
 
                     var muteObj = {
-                        administrator: message.author.tag,
+                        administrator: author.tag,
                         reason: reason,
                         type: "Unmute",
                         date: Date.now(),
@@ -149,9 +152,13 @@ module.exports = {
                     } else {
                         embed.setDescription(`<:Bluecheckmark:754538270028726342> **${person.user.tag} has been unmuted!** | ***${reason}***`);
                     }
-                    message.channel.send({
+
+                    if (message.type == "DEFAULT" || message.type == "REPLY") {
+                        await message.delete().catch(error => console.log(error))
+                    }
+                    send(message, {
                         embeds: [embed]
-                    })
+                    }, false)
                 }
             }
         })

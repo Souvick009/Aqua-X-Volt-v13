@@ -1,17 +1,20 @@
 const Discord = require("discord.js");
+const send = require("../../utils/sendMessage.js")
 
 
 module.exports = {
+
     name: "serverinfo",
     aliases: [],
-    accessableby: "Manage Messages",
+    accessableby: "MANAGE_MESSAGES",
     description: "Show Useful Infomation About The Server",
     usage: "=serverinfo",
     example: "=serverinfo",
     cooldown: 5,
     category: "Info",
     permission: ["MANAGE_MESSAGES"],
-    botreq: "Embed Links",
+    botreq: ["EMBED_LINKS"],
+
     run: async (bot, message, args) => {
 
         var serv = message.guild
@@ -67,7 +70,7 @@ module.exports = {
         let serverembed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setThumbnail(sicon)
-            .setAuthor(message.guild.name)
+            .setAuthor({ name: message.guild.name })
             .addField("__Server Name:__", message.guild.name, inline)
             .addField("__Server ID:__", message.guild.id, inline)
             .addField("__Server Owner:__", owner.user.tag, inline)
@@ -77,13 +80,13 @@ module.exports = {
             .addField(`__Explicit Content Filter Level:__`, eFC, inline)
             .addField("__Verification Level:__", `${verlvl[message.guild.verificationLevel]}`, inline)
             .addField("__Members:__", `${message.guild.memberCount}`, inline)
-            .addField("__Roles:__",  message.guild.roles.cache.size.toString(), inline)
-            .addField("__Text Channels:__",message.guild.channels.cache.filter(c => c.type === "GUILD_TEXT").size.toString(), inline)
+            .addField("__Roles:__", message.guild.roles.cache.size.toString(), inline)
+            .addField("__Total Channels:__", message.guild.channels.cache.filter(c => c.type !== "GUILD_CATEGORY").size.toString(), inline)
+            .addField("__Text Channels:__", message.guild.channels.cache.filter(c => c.type === "GUILD_TEXT").size.toString(), inline)
             .addField("__Voice Channels:__", message.guild.channels.cache.filter(c => c.type === "GUILD_VOICE").size.toString(), inline)
             .addField("__You Joined:__", joined, inline)
-            .setFooter(`Server Created: ${created}`);
-
-        message.channel.send({ embeds: [serverembed] });
+            .setFooter({ text: `Server Created: ${created}` });
+        send(message, { embeds: [serverembed] });
     }
 
 

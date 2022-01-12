@@ -1,32 +1,29 @@
 const Discord = require("discord.js");
-
+const send = require("../../utils/sendMessage.js")
 
 module.exports = {
-  name: "coinflip",
-  aliases: ["flip"],
-  description: "Simple Coinflip Game or You Can Call This Head or Tail Game",
-  usage: "<command | alias>",
-  accessableby: "Anyone",
-  category: "Fun",
-  example: "=coinflip",
-  permission: [""],
-  botreq: "",
-  run: async (bot, message, args) => {
+    name: "coinflip",
+    aliases: ["flip"],
+    description: "Simple Coinflip Game or You Can Call This Head or Tail Game",
+    usage: "<command | alias>",
+    accessableby: "Anyone",
+    category: "Fun",
+    example: "=coinflip",
+    permission: [""],
+    botreq: "",
+    run: async (bot, message, args, author, options) => {
 
-    if (!message.guild.me.permissions.has(["SEND_MESSAGES"])) return
+        var choices = [
+            "heads",
+            "tails"
+        ];
 
-    if (!message.channel.permissionsFor(message.guild.me).has("SEND_MESSAGES")) return
-    
-    var choices = [
-      "heads",
-      "tails"
-    ];
+        var output = choices[Math.floor(Math.random() * choices.length)];
 
-    var output = choices[Math.floor(Math.random() * choices.length)];
+        send(message, { content: `You got **${output}**` }
+        );
 
-    message.channel.send(`You got **${output}**`)
-
-  }
+    }
 
 
 }

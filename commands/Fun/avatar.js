@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
-
+const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js")
 
 module.exports = {
 
@@ -13,80 +14,45 @@ module.exports = {
     aliases: ["av"],
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "user",
+        description: "For which user avatar should be sent? Defaults to author",
+        required: false,
+        type: 6, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "user"
+    }],
+    run: async (bot, message, args, options, author) => {
 
         if (!message.member.permissions.has(["MANAGE_MESSAGES"])) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ You do not have permissions to check avatar of Server Members. Please contact a staff member.[Missing Permsission:- Manage Messages]")
-            return message.channel.send(embed)
-        }
-
-        // var member = message.mentions.members.first() || await message.guild.members.fetch(args[0])
-        let memberUser;
-        var member;
-        var mention = args[0];
-        if (args[0]) {
-            try {
-                if (message.mentions.repliedUser) {
-                    if (mention.startsWith('<@') && mention.endsWith('>')) {
-                        mention = mention.slice(2, -1);
-
-                        if (mention.startsWith('!')) {
-                            mention = mention.slice(1);
-                        }
-                        member = await message.guild.members.fetch(mention)
-                    } else {
-                        member = message.mentions.members.get(Array.from(message.mentions.members.keys())[1]) || await message.guild.members.fetch(args[0])
-                    }
-                    // console.log(member)
-                } else {
-                    member = message.mentions.members.first() || await message.guild.members.fetch(args[0])
-                }
-                // console.log(args[0])
-                if (!member) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            } catch (error) {
-                if (!member) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            }
-        } else {
-            memberUser = message.author
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
 
-        if (!args[0]) {
-            memberUser = message.author
-        } else {
-            try {
-                memberUser = member.user
-            } catch (error) {
-                return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            }
-        }
+        var member = await getMember(bot, args, options, message, author, true, false, 0, false)
+        if (!member) return;
 
-        var hexes;
-        if (member) {
-            hexes = member.displayHexColor
-        } else {
-            hexes = message.member.displayHexColor
-        }
+        var hexes = member.displayHexColor
 
         let embed = new Discord.MessageEmbed()
-            .setImage(memberUser.displayAvatarURL({ format: 'png', dynamic: true, size: 1024 }))
+            .setImage(member.user.displayAvatarURL({
+                format: 'png',
+                dynamic: true,
+                size: 1024
+            }))
             .setColor(hexes === '#000000' ? '#ffffff' : hexes)
-            .setAuthor(memberUser.tag, memberUser.displayAvatarURL())
+            .setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() })
             .setTitle("Avatar")
-            .setFooter("Searched by " + message.author.tag, message.author.displayAvatarURL());
-        let msg = await message.channel.send({ content: "Generating avatar..." });
+            .setFooter({ text: "Searched by " + author.tag, iconURL: author.displayAvatarURL() });
+        send(message, {
+            embeds: [embed]
+        });
 
-
-        try {
-            message.channel.send({ embeds: [embed] })
-        } catch (error) {
-            console.log(embed)
-        }
-
-
-        msg.delete().catch(error => console.log(error));
     }
 
 

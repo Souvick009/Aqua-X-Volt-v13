@@ -1,5 +1,7 @@
 const Discord = require("discord.js");
 const ms = require('ms');
+const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "lock",
@@ -11,77 +13,134 @@ module.exports = {
     example: "=lock #chillzone 5m, =lock, =lock #chillzone",
     permission: ["MANAGE_CHANNELS"],
     botreq: "Embed Links, Manage Channel",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "channel",
+        description: "The channel to be locked, blank for current channel",
+        required: false,
+        type: 7, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    },
+    {
+        name: "time",
+        description: "Duration of this channel to be locked, blank for permanent",
+        required: false,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    }
+    ],
+    run: async (bot, message, args, options, author) => {
+
 
         if (!message.guild.me.permissions.has(["MANAGE_CHANNELS"])) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ Check My Permissions. [Missing Permissions:- MANAGE CHANNELS]")
-            return message.channel.send({ embeds: [embed] });
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true);
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ I don't have permission in this channel! [Missing Permission:- MANAGE CHANNELS]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
 
         // await message.delete();
 
         function timeLock() {
+            
+            if (time.length > 100) return send(message, { content: `The time exceeds the limit.` }, true)
 
-            let channel;
             let newTime;
             try {
                 newTime = ms(ms(time))
-                // console.log("Normal time " + ms(time))
             } catch (error) {
-                message.reply("Please provide a valid time")
                 should = false
+                return send(message, { content: "Please provide a valid time" }, true)
             }
 
-            if (!args[0]) {
+            if (!channel === undefined) {
                 channel = message.channel
             } else {
-                channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0])
+                if (message.type == "APPLICATION_COMMAND") {
+
+                    try {
+                        channel = message.guild.channels.cache.get(channel)
+                    } catch {
+                        send(message, { content: 'Please re-write this command carefully' }, true)
+                    }
+                } else {
+                    try {
+                        channel = message.mentions.channels.first() || message.guild.channels.cache.get(channel)
+                    } catch {
+                        send(message, { content: 'Please re-write this command carefully' }, true)
+                    }
+                }
+                if (!channel) return send(message, {
+                    content: `This channel doesn't exist on this server`
+                }, true)
             }
 
             if (ms(time) > 604800000) {
-                return message.reply(`Max Limit is 7 days`)
+                return send(message, { content: `Max Limit is 7 days` }, true)
             }
 
-            if (!channel) message.reply("Channel not found!")
-
-            if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return message.reply(`❌ I don't have Manage Channels permission in <#${channel.id}>!`)
-            if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return message.channel.send("Cannot lock an already locked channel")
-            channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, { SEND_MESSAGES: false }).then(() => {
-                message.reply(`Succesfully locked the channel <#${channel.id}> for ${newTime}`)
+            if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return send(message, { content: `❌ I don't have Manage Channels permission in <#${channel.id}>!` }, true)
+            if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return send(message, { content: "Cannot lock an already locked channel" },)
+            channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
+                SEND_MESSAGES: false
+            }).then(() => {
+                send(message, { content: `Succesfully locked the channel <#${channel.id}> for ${newTime}` }, true)
             }).catch(err => {
                 console.log(err)
             })
 
             setTimeout(async () => {
-                await channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, { SEND_MESSAGES: true })
+                await channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
+                    SEND_MESSAGES: true
+                })
             }, ms(time));
         }
 
         function permLock() {
-            let channel;
 
-            if (!args[0]) {
+            if (!channel === undefined) {
                 channel = message.channel
             } else {
-                channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0])
-                if (!channel) return message.reply(`${args[0]} channel doesn't exist on this server`)
+                if (message.type == "APPLICATION_COMMAND") {
+
+                    try {
+                        channel = message.guild.channels.cache.get(channel)
+                    } catch {
+                        send(message, { content: 'Please re-write this command carefully' }, true)
+                    }
+                } else {
+                    try {
+                        channel = message.mentions.channels.first() || message.guild.channels.cache.get(channel)
+                    } catch {
+                        send(message, { content: 'Please re-write this command carefully' }, true)
+                    }
+                }
+                if (!channel) return send(message, {
+                    content: `This channel doesn't exist on this server`
+                }, true)
             }
 
-            if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return message.reply(`❌ I don't have Manage Channels permission in <#${channel.id}>!`)
-            if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return message.channel.send("Cannot lock an already locked channel")
+            if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return send(message, { content: `❌ I don't have Manage Channels permission in <#${channel.id}>!` }, true)
+            if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return send(message, { content: "Cannot lock an already locked channel" }, false)
             try {
-                channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, { SEND_MESSAGES: false }).then(() => {
-                    message.reply(`Succesfully locked the channel <#${channel.id}>`)
+                channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
+                    SEND_MESSAGES: false
+                }).then(() => {
+
+                    send(message, { content: `Succesfully locked the channel <#${channel.id}>` }, true)
                 })
             } catch (err) {
                 console.log(err)
@@ -89,22 +148,14 @@ module.exports = {
         }
 
         var should = true
-        let time = args[1];
-
-
-        // let channel;
-        // if (!args[0]) {
-        //     channel = message.channel
-        // } else {
-        //     channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0])
-        // }
-        // if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return message.reply(`❌ I don't have Manage Channels permission in <#${channel.id}>!`)
-        // if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return message.channel.send("Cannot lock an already locked channel")
-        // channel.updateOverwrite(message.channel.guild.roles.everyone, { SEND_MESSAGES: false }).then(() => {
-        //     message.channel.send(`Succesfully locked the channel <#${channel.id}>`)
-        // }).catch(err => {
-        //     console.log(err)
-        // })
+        let channel;
+        if (message.type == "APPLICATION_COMMAND") {
+            channel = options[0]
+            time = options[1]
+        } else {
+            channel = args[0]
+            time = args[1]
+        }
 
         if (should == false) return
         if (!time) {

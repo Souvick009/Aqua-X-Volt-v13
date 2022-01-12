@@ -1,25 +1,28 @@
 const Discord = require("discord.js");
-const PREFIX = '=';
 module.exports = {
+
   name: "ping",
   aliases: [],
-  accessableby: "Manage Messages",
+  accessableby: "MANAGE_MESSAGES",
   description: "Check ping of the bot",
   usage: "=ping",
   example: "=ping ",
   cooldown: 5,
   category: "Info",
   permission: [""],
-  botreq : "",
-  run: async (bot, message, args) => {
-    if (!message.guild.me.permissions.has(["SEND_MESSAGES"])) return
-    
-    if (!message.channel.permissionsFor(message.guild.me).has("SEND_MESSAGES")) return
+  botreq: [],
 
-    message.channel.send('Loading data').then(async (msg) => {
-      msg.delete().catch(error => console.log(error))
-      message.channel.send(`🏓Latency is ${msg.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(bot.ws.ping)}ms`);
-    })
+  run: async (bot, message, args) => {
+    if (message.type == "APPLICATION_COMMAND") {
+      var m = await message.reply({ content: "Loading.....", fetchReply: true })
+      await message.editReply(`🏓Latency is \`${Math.round(bot.ws.ping)}\`ms.`)
+
+    } else {
+      message.reply('Loading data').then(async (msg) => {
+        msg.delete()
+        message.reply(`🏓Latency is \`${Math.round(bot.ws.ping)}\`ms.`);
+      })
+    }
   }
 
 

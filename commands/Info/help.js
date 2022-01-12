@@ -1,6 +1,9 @@
 const Discord = require("discord.js");
-const { stripIndents } = require("common-tags");
+const {
+    stripIndents
+} = require("common-tags");
 const server = require("../../model/server");
+const send = require("../../utils/sendMessage.js")
 
 module.exports = {
     name: "help",
@@ -11,31 +14,34 @@ module.exports = {
     example: "=help || =help mute || =help clear || =help avatar",
     accessableby: "Anyone",
     permission: [""],
-    botreq: "EMBED LINKS",
-    run: async (bot, message, args) => {
-
-        if (!message.guild.me.permissions.has(["SEND_MESSAGES"])) return
-
-        if (!message.channel.permissionsFor(message.guild.me).has("SEND_MESSAGES")) return
-
-        if (!message.guild.me.permissions.has(["EMBED_LINKS"])) return message.channel.send("❌ I don't have Embed Links permission!")
-
-        if (!message.channel.permissionsFor(message.guild.me).has("EMBED_LINKS")) return message.channel.send("❌ I don't have Embed Links permission in this channel!")
-
+    cooldown: 5,
+    botreq: ["EMBED_LINKS"],
+    options: [{
+        name: "command",
+        description: "For which command should I send information for?",
+        required: false,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    }],
+    run: async (bot, message, args, options, author) => {
+        var cmdName;
+        if (options) {
+            cmdName = options[0]
+        }
         // If there's an args found
         // Send the info of that command found
         // If no info found, return not found embed.
-        if (args[0]) {
-            return getCMD(bot, message, args[0]);
+        if (cmdName) {
+            return getCMD(bot, message, cmdName);
         } else {
             // Otherwise send all the commands available
             // Without the cmd info
-            return getAll(bot, message);
+            return getAll(bot, message, author);
         }
     },
 };
 
-async function getAll(bot, message) {
+async function getAll(bot, message, author) {
     var prefix;
 
     server.findOne({
@@ -57,17 +63,18 @@ async function getAll(bot, message) {
         }
         const categories = ["Moderation", "Info", "Fun", "Utility"]
         // Map all the categories
-        const lines = categories.map((category, name) => "**" + category + "**" + "\n" + commands(category)
-        );
+        const lines = categories.map((category, name) => "**" + category + "**" + "\n" + commands(category));
         console.log(bot.categories)
 
         const embed = new Discord.MessageEmbed().setColor("#00fff3");
         embed.setDescription(`${lines.join("\n")} \n **Prefix** \n \`${prefix}\` \n For More Information Use **${prefix}help command** \n Example:- **${prefix}help kick**`)
-        embed.setFooter(message.author.tag, message.author.displayAvatarURL())
+        embed.setFooter({ text: author.tag, iconURL: author.displayAvatarURL() })
         embed.setThumbnail(message.guild.iconURL())
         embed.setTimestamp()
         embed.setTitle("Here are the available commands you can use:")
-        return message.channel.send({ embeds: [embed] });
+        return send(message, {
+            embeds: [embed]
+        });
     })
 }
 
@@ -84,7 +91,9 @@ function getCMD(bot, message, input) {
     // If no cmd is found, send not found embed
     if (!cmd) {
         embed.setColor("RED").setDescription(info)
-        return message.channel.send({ embeds: [embed] });
+        return send(message, {
+            embeds: [embed]
+        });
     }
 
     // Add all cmd info to the embed
@@ -96,9 +105,11 @@ function getCMD(bot, message, input) {
     if (cmd.accessableby) info += `\n⦿ **Accessable by**: ${cmd.accessableby}`;
     if (cmd.usage) {
         info += `\n⦿ **Usage**: ${cmd.usage}`;
-        embed.setFooter(`Syntax: <> = required, [] = optional`);
+        embed.setFooter({ text: `Syntax: <> = required, [] = optional` });
     }
     if (cmd.botreq) info += `\n\n:radioactive: **Permissions required for Aqua X Volt to work**: ${cmd.botreq}`;
     embed.setColor("#00fff3").setDescription(info)
-    return message.channel.send({ embeds: [embed] });
+    return send(message, {
+        embeds: [embed]
+    });
 }

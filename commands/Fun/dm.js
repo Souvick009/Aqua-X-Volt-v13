@@ -1,4 +1,6 @@
 const Discord = require("discord.js");
+const send = require("../../utils/sendMessage.js");
+const getMember = require("../../utils/getMember.js");
 
 module.exports = {
 
@@ -11,84 +13,81 @@ module.exports = {
     category: "Fun",
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links, Manage Message",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "user",
+        description: "User who is supposed to get the DM",
+        required: true,
+        type: 6, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "user"
+    },
+    {
+        name: "message",
+        description: "Message to be sent to the user",
+        required: true,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "reason"
+    }
+    ],
+    run: async (bot, message, args, options, author) => {
         if (!message.guild.me.permissions.has(["MANAGE_MESSAGES"])) {
             const noperm = new Discord.MessageEmbed()
             noperm.setColor(0xFF0000)
             noperm.setDescription(`❌ Check My Permissions. [Missing Permissions:- MANAGE MESSAGES]`)
-            return message.channel.send({
-                embeds: [noperm]
-            });
+            return send(message, {
+                embeds: [noperm],
+                ephemeral: true
+            }, true);
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_MESSAGES")) {
             const noperm1 = new Discord.MessageEmbed()
             noperm1.setColor(0xFF0000)
             noperm1.setDescription(`❌ Check My Permissions. [Missing Permissions:- MANAGE MESSAGES]`)
-            return message.channel.send({
-                embeds: [noperm1]
-            });
+            return send(message, {
+                embeds: [noperm1],
+                ephemeral: true
+            }, true);
         }
+        if (message.type == "DEFAULT" || message.type == "REPLY") {
+            await message.delete().catch(error => console.log(error))
+        }
+        var mentionedUser = await getMember(bot, args, options, message, author, false, false, 0, false)
 
-        await message.delete().catch(error => console.log(error))
+        if (!mentionedUser) return;
 
-        var mentionedUser;
-        var mention = args[0];
-        if (args[0]) {
-            try {
-                if (message.mentions.repliedUser) {
-                    if (mention.startsWith('<@') && mention.endsWith('>')) {
-                        mention = mention.slice(2, -1);
+        let msgtosend = options[1]
+        if (!msgtosend) return send(message, { content: `You Need To Provide A Text To DM Others!` }, true);
 
-                        if (mention.startsWith('!')) {
-                            mention = mention.slice(1);
-                        }
-                        mentionedUser = await message.guild.members.fetch(mention)
-                    } else {
-                        mentionedUser = message.mentions.members.get(Array.from(message.mentions.members.keys())[1]) || await message.guild.members.fetch(args[0])
-                    }
-                } else {
-                    mentionedUser = message.mentions.members.first() || await message.guild.members.fetch(args[0])
-                }
-                if (!mentionedUser) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            } catch (error) {
-                if (!mentionedUser) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            }
-        } else return message.channel.send(`<@${message.author.id}>,` + "You Need To Mention A User!");
-
-        let msgtosend = args
-        msgtosend.shift();
-
-        if (!msgtosend) return message.channel.send(`<@${message.author.id}>` + "You Need To Provide A Text To DM Others!")
 
         const dmEmbed = new Discord.MessageEmbed()
             .setColor(0x00FFFF)
             .setThumbnail(bot.user.displayAvatarURL())
             .setDescription(`:loudspeaker: **You just received a new direct message!**`)
-            .addField(`:speaking_head: **From:**`, `═══════ \n  __${message.author.tag}__ \n **--------------------------------------------**`)
-            .addField(`:speech_balloon: **Message:**`, `═════════ \n  ${msgtosend.join(" ")}`)
-            .setFooter(message.author.tag, message.author.displayAvatarURL())
+            .addField(`:speaking_head: **From:**`, `═══════ \n  __${author.tag}__ \n **--------------------------------------------**`)
+            .addField(`:speech_balloon: **Message:**`, `═════════ \n  ${msgtosend}`)
+            .setFooter({ text: author.tag, iconURL: author.displayAvatarURL() })
             .setTimestamp()
         var blocked = false;
         await mentionedUser.send({
-            embeds: [dmEmbed]
+            embeds: [dmEmbed],
         }).catch(error => {
+            console.log(error)
             blocked = true;
         }).finally(async () => {
             if (blocked) {
                 const errEmbed = new Discord.MessageEmbed();
                 errEmbed.setColor(0xFF0000)
                 errEmbed.setDescription(`❌ I was unable to dm that User! `);
-                return message.channel.send({
+                return send(message, {
                     embeds: [errEmbed]
-                });
+                }, false);
             } else {
                 var sentEmbed = new Discord.MessageEmbed()
                     .setColor(0x00FFFF)
                     .setDescription(`<:Bluecheckmark:754538270028726342> DM Sent! `);
-                await message.channel.send({
+                send(message, {
                     embeds: [sentEmbed]
-                });
+                }, false);
             }
         })
 

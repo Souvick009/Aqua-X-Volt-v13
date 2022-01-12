@@ -2,8 +2,12 @@ const Discord = require("discord.js");
 const serverUser = require("../../model/serverUser.js")
 const server = require("../../model/server.js")
 const perms = Discord.Permissions.FLAGS
-var { uuid } = require("uuidv4")
+var {
+    uuid
+} = require("uuidv4")
 const moment = require("moment");
+const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js");
 
 
 module.exports = {
@@ -16,58 +20,54 @@ module.exports = {
     example: "=warn @Real Warrior#5085 Abuse",
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links, Manage Messages",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "user",
+        description: "Which user should be warned",
+        required: true,
+        type: 6, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    }, {
+        name: "reason",
+        description: "Reason why the user is being warned",
+        required: true,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "reason"
+    }],
+    run: async (bot, message, args, options, author) => {
 
         if (!message.guild.me.permissions.has(["MANAGE_MESSAGES"])) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ Check My Permissions. [Missing Permission:- Manage Messages]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_MESSAGES")) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ I don't have permission in this channel! [Missing Permission:- Manage Messages]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
-
-        await message.delete().catch(error => console.log(error))
 
         //defining member who will get a warn and fetching id of him so member will be id of user mentioned
-        var member;
-        var mention = args[0];
-        if (args[0]) {
-            try {
-                if (message.mentions.repliedUser) {
-                    if (mention.startsWith('<@') && mention.endsWith('>')) {
-                        mention = mention.slice(2, -1);
+        var member = await getMember(bot, args, options, message, author, false, false, 0, false)
 
-                        if (mention.startsWith('!')) {
-                            mention = mention.slice(1);
-                        }
-                        member = await message.guild.members.fetch(mention)
-                    } else {
-                        member = message.mentions.members.get(Array.from(message.mentions.members.keys())[1]) || await message.guild.members.fetch(args[0]).catch(error => console.log())
-                    }
-                } else {
-                    member = message.mentions.members.first() || await message.guild.members.fetch(args[0]).catch(error => console.log())
-                }
-                if (!member) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            } catch (error) {
-                if (!member) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            }
-        } else {
-            if (!member) return message.channel.send(`<@${message.author.id}> , You Need To Mention A User!`);
-        }
+        if (!member) return;
+
         //storing data in db according to total warns, member warned, guild id
         const Createdd = Date.now()
         const iddd = uuid()
-        const reason = args.slice(1).join(" ");
+        let reason = options[1]
 
-        if (member.permissions.has(perms.ADMINISTRATOR)) return message.channel.send(`<@${message.author.id}> , ❌ You can not warn an Admin. This person seems to be an Admin of this server.`).then(m => setTimeout(() => m.delete().catch(error => console.log(error)), 5000));
+        if (member.permissions.has(perms.ADMINISTRATOR)) return send(message, { content: `❌ You can not warn an Admin. This person seems to be an Admin of this server.` }, true)
 
-        if (!reason) return message.channel.send(`<@${message.author.id}> , You didn't specify a reason!`).then(m => setTimeout(() => m.delete(), 5000));
+        if (!reason) return send(message, { content: `<@${author.id}> , You didn't specify a reason!` }, true)
 
 
 
@@ -84,7 +84,7 @@ module.exports = {
                 })
                 await newUser.save().catch(e => console.log(e));
                 var warnObj = {
-                    administrator: message.author.tag,
+                    administrator: author.tag,
                     reason: reason,
                     id: iddd,
                     date: Createdd
@@ -94,7 +94,7 @@ module.exports = {
 
             } else if (user) {
                 var warnObj = {
-                    administrator: message.author.tag,
+                    administrator: author.tag,
                     reason: reason,
                     id: iddd,
                     date: Createdd
@@ -104,10 +104,16 @@ module.exports = {
             }
         })
 
+        if (message.type == "DEFAULT" || message.type == "REPLY") {
+            await message.delete().catch(error => console.log(error));
+        }
+
         const embed = new Discord.MessageEmbed()
         embed.setColor(0x00FFFF)
         embed.setDescription(`<:Bluecheckmark:754538270028726342> ***${member} has been warned*** | **${reason}**`);
-        message.channel.send({ embeds: [embed] });
+        send(message, {
+            embeds: [embed]
+        }, false);
 
         //Notifing warnings through DM
         // const mention = message.mentions.members.first();
@@ -115,10 +121,10 @@ module.exports = {
         embed.setColor(0x00FFFF)
         embed.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been warned in ${message.guild.name}*** | **${reason}**`);
         var dmUser = await bot.users.fetch(member.id)
-        dmUser.send({ embeds: [embed] }).catch(error => {
-            if (error) {
+        await dmUser.send({
+            embeds: [embed],
+        }).catch(error => {
                 console.log(error);
-            }
         });
         // try {
 

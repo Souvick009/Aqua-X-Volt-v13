@@ -1,5 +1,7 @@
 const Discord = require("discord.js");
 const ms = require('ms');
+const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "unban",
@@ -11,40 +13,62 @@ module.exports = {
     category: "Moderation",
     permission: ["BAN_MEMBERS"],
     botreq: "Embed Links, Ban Members, Manage Messages",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "user",
+        description: "For which command should I send information for?",
+        required: true,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    },
+    {
+        name: "reason",
+        description: "For which command should I send information for?",
+        required: false,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "reason"
+    }],
+    run: async (bot, message, args, options, author) => {
 
         if (!message.guild.me.permissions.has("BAN_MEMBERS")) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ Check My Permissions. [Missing Permissions:- BAN MEMBERS]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
         if (!message.guild.me.permissions.has(["MANAGE_MESSAGES"])) {
             const noperm = new Discord.MessageEmbed()
             noperm.setColor(0xFF0000)
             noperm.setDescription(`❌ Check My Permissions. [Missing Permissions:- MANAGE MESSAGES]`)
-            return message.channel.send({ embeds: [noperm] });
+            return send(message, {
+                embeds: [noperm],
+                ephemeral: true
+            }, true);
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_MESSAGES")) {
             const noperm1 = new Discord.MessageEmbed()
             noperm1.setColor(0xFF0000)
             noperm1.setDescription(`❌ I don't have permission in this channel! [Missing Permissions:- MANAGE MESSAGES]`)
-            return message.channel.send({ embeds: [noperm1] });
+            return send(message, {
+                embeds: [noperm1],
+            }, true);
         }
 
-        await message.delete().catch(error => console.log())
-
         var user;
-        if (!args) return message.channel.send(`<@${message.author.id}> Please provide a user id!`)
-        if (!isNaN(args)) {
+        var input = options[0]
+
+        if (!input) return send(message, { content: `Please provide a user id!` }, true)
+
+        if (!isNaN(input)) {
             user = await bot.users.fetch(args).catch(error => console.log())
-        } else {
-            let usertag = args.join(" ").split("#")
-            if (usertag.length < 2) return message.channel.send(`<@${message.author.id}> Couldnt find the user please use user id instead`)
-            user = bot.users.cache.filter(user => user.username === usertag[0]).find(user => user.discriminator === usertag[1]);
-            if (!user) return message.channel.send(`<@${message.author.id}> Couldnt find the user please use user id instead`)
+        }
+
+        if (message.type == "DEFAULT" || message.type == "REPLY") {
+            await message.delete().catch(error => console.log())
         }
 
         if (user) {
@@ -55,24 +79,27 @@ module.exports = {
                 const unbanned = new Discord.MessageEmbed()
                 unbanned.setColor(0x00FFFF)
                 unbanned.setDescription(`<:Bluecheckmark:754538270028726342> ***Successfully Unbanned ${user.tag}***`)
-                return message.channel.send({ embeds: [unbanned] })
+                return send(message, { embeds: [unbanned] }, false)
             } else {
                 const notbanned = new Discord.MessageEmbed()
                 notbanned.setColor(0xFF0000)
                 notbanned.setDescription(`❌ **${user.tag} isn\'t banned**`)
-                return message.channel.send({ content: `<@${message.author.id}>`, embeds: [notbanned] });
+                return send(message, {
+                    embeds: [notbanned],
+                    ephemeral: true
+                }, true);
             }
         } else if (!user) {
             var fetchBans = await message.guild.bans.fetch();
-            var currentBan = fetchBans.get(args[0])
-            if (!currentBan) return message.channel.send(`<@${message.author.id}>, Couldn't find the user in the ban list of the server`)
-            console.log(currentBan)
+            var currentBan = fetchBans.get(input)
+            if (!currentBan) return send(message, { content: `Couldn't find the user in the ban list of the server` }, false)
+            // console.log(currentBan)
             if (currentBan) {
-                var unban = await message.guild.bans.remove(args[0]).catch(error => console.log(error))
+                var unban = await message.guild.bans.remove(input).catch(error => console.log(error))
                 const unbanned = new Discord.MessageEmbed()
                 unbanned.setColor(0x00FFFF)
                 unbanned.setDescription(`<:Bluecheckmark:754538270028726342> ***Successfully Unbanned ${unban.username}#${unban.discriminator}***`)
-                return message.channel.send({ embeds: [unbanned] })
+                return send(message, { embeds: [unbanned] }, false)
 
             }
         }

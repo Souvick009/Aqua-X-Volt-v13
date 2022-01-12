@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const ms = require('ms');
+const send = require("../../utils/sendMessage.js")
 
 module.exports = {
     name: "slowmode",
@@ -11,57 +12,91 @@ module.exports = {
     example: "=slowmode 5m, =slowmode 5m #chillzone",
     permission: ["MANAGE_CHANNELS"],
     botreq: "Embed Links, Manage Channel",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "time",
+        description: "How much slowmode should be there?",
+        required: true,
+        type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    }, {
+        name: "channel",
+        description: "Add slowmode to which channel? Defaults to current channel",
+        required: false,
+        type: 7, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    }],
+    run: async (bot, message, args, options, author) => {
 
         if (!message.guild.me.permissions.has(["MANAGE_CHANNELS"])) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ Check My Permissions. [Missing Permissions:- MANAGE CHANNELS]")
-            return message.channel.send({ embeds: [embed] });
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true);
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ I don't have permission in this channel! [Missing Permission:- MANAGE CHANNELS]")
-            return message.channel.send({ embeds: [embed] })
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
 
         // await message.delete();
 
-        if (!args[0]) return message.reply(`Please specify the time!`)
+        if (!options[0]) return send(message, { content: `Please specify the time!` }, true)
+
+        if (options[0].length > 100) return send(message, { content: `The time exceeds the limit.` }, true)
 
         let channel;
-        if (!args[1]) {
+        if (!options[1]) {
             channel = message.channel
         } else {
-            channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0])
+            if (message.type == "APPLICATION_COMMAND") {
+                try {
+                    channel = message.guild.channels.cache.get(options[1])
+                } catch {
+                    send(message, { content: 'Please re-write the command correctly' }, true)
+                }
+            } else {
+                try {
+                    channel = message.mentions.channels.first() || message.guild.channels.cache.get(options[1])
+                } catch {
+                    send(message, { content: 'Please re-write the command correctly' }, true)
+                }
+            }
         }
-
-        if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return message.reply(`❌ I don't have Manage Channels permission in <#${channel.id}>!`)
+        if (!channel) return send(message, { content: "This channel doesn't exist" }, true)
+        if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return send(message, { content: `❌ I don't have Manage Channels permission in <#${channel.id}>!` })
 
         var time1;
-        if (args[0].toLowerCase() == "off" || args[0] == "0") {
+        if (options[0].toLowerCase() == "off" || options[0] == "0") {
             time = 0
-            if (isNaN(time)) return message.reply("Cannot use that as slowmode")
+            if (isNaN(time)) return send(message, { content: "Invalid Format, Cannot use that as slowmode" }, true)
         } else {
-            time1 = (ms(args[0])) / 1000
+            time1 = (ms(options[0])) / 1000
             var time = Math.round(time1)
-            if (isNaN(time)) return message.reply("Cannot use that as slowmode")
-            if (time < 1) return message.reply("Minimum is 1 Second")
-            if (time > 21600) return message.reply("Maximum is 6 hours")
+            if (isNaN(time)) return send(message, { content: "Invalid Format, Cannot use that as slowmode" }, true)
+            if (time < 1) return send(message, { content: "Minimum is 1 Second" }, true)
+            if (time > 21600) return send(message, { content: "Maximum is 6 hours" }, true)
         }
 
-        // if (isNaN(time)) return message.reply("Cannot use that as slowmode")
-        // if (time <= 1) return message.reply("Min is 1 minute")
-        // if (time > 21600) return message.reply("Max is 6 hours")
+        // if (isNaN(time)) return send("Cannot use that as slowmode")
+        // if (time <= 1) return send("Min is 1 minute")
+        // if (time > 21600) return send("Max is 6 hours")
         // console.log(time)
+
         channel.setRateLimitPerUser(time).then(() => {
-            if (args[0].toLowerCase() == "off" || args[0] == "0") {
-                message.channel.send(`Slowmode is now turned off for the <#${channel.id}> channel`)
+            if (options[0].toLowerCase() == "off" || options[0] == "0") {
+                send(message, { content: `Slowmode is now turned off for the <#${channel.id}> channel` }, true)
             } else {
-                message.channel.send(`Succesfully added slowmode of ${time} to the <#${channel.id}> channel`)
+                send(message, { content: `Succesfully added slowmode of ${ms(time * 1000)} to the <#${channel.id}> channel` }, true)
             }
 
         }).catch(err => {

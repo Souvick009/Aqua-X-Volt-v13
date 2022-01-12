@@ -1,4 +1,7 @@
 const Discord = require("discord.js");
+const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js");
+const getRole = require("../../utils/getRole.js")
 
 module.exports = {
     name: "removerole",
@@ -11,82 +14,89 @@ module.exports = {
     cooldown: 5,
     permission: ["MANAGE_ROLES"],
     botreq: "Embed Links, Manage Roles, Manage Messages",
-    run: async (bot, message, args) => {
+    options: [{
+        name: "user",
+        description: "From the user, role should be removed",
+        required: true,
+        type: 6, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    },
+    {
+        name: "role",
+        description: "The role that should be removed",
+        required: true,
+        type: 8, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
+        req: "string"
+    }],
+    run: async (bot, message, args, options, author) => {
 
         if (!message.guild.me.permissions.has("MANAGE_ROLES")) {
             const embed1 = new Discord.MessageEmbed()
             embed1.setColor(0xFF0000)
             embed1.setDescription("❌ Check My Permissions. [Missing Permissions:- MANAGE ROLES]")
-            return message.channel.send({ embeds: [embed1] })
+            return send(message, {
+                embeds: [embed1],
+                ephemeral: true
+            }, true)
         }
 
         if (!message.guild.me.permissions.has(["MANAGE_MESSAGES"])) {
             const noperm = new Discord.MessageEmbed()
             noperm.setColor(0xFF0000)
             noperm.setDescription(`❌ Check My Permissions. [Missing Permissions:- MANAGE MESSAGES]`)
-            return message.channel.send({ embeds: [noperm] });
+            return send(message, {
+                embeds: [noperm],
+                ephemeral: true
+            }, true);
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_MESSAGES")) {
             const noperm1 = new Discord.MessageEmbed()
             noperm1.setColor(0xFF0000)
             noperm1.setDescription(`❌ I don't have permission in this channel! [Missing Permissions:- MANAGE MESSAGES]`)
-            return message.channel.send({ embeds: [noperm1] });
+            return send(message, {
+                embeds: [noperm1],
+                ephemeral: true
+            }, true);
         }
 
-        await message.delete().catch(error => console.log(error))
-
-
-
-        var rmember;
-        var mention = args[0];
-        if (args[0]) {
-            try {
-                if (message.mentions.repliedUser) {
-                    if (mention.startsWith('<@') && mention.endsWith('>')) {
-                        mention = mention.slice(2, -1);
-
-                        if (mention.startsWith('!')) {
-                            mention = mention.slice(1);
-                        }
-                        rmember = await message.guild.members.fetch(mention)
-                    } else {
-                        rmember = message.mentions.members.get(Array.from(message.mentions.members.keys())[1]) || await message.guild.members.fetch(args[0]).catch(error => console.log())
-                    }
-                } else {
-                    rmember = message.mentions.members.first() || await message.guild.members.fetch(args[0]).catch(error => console.log())
-                }
-                if (!rmember) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            } catch (error) {
-                if (!rmember) return message.channel.send(`<@${message.author.id}>, Invalid User!`);
-            }
-        } else {
-            if (!rmember) return message.channel.send(`<@${message.author.id}> , You Need To Mention A User!`);
+        if (message.type == "DEFAULT" || message.type == "REPLY") {
+            await message.delete().catch(error => console.log(error))
         }
 
-        let role1 = args
-        role1.shift()
-        let role2 = role1.join(" ")
-        let role = message.guild.roles.cache.find(r => r.name == role2) || message.mentions.roles.first() || message.guild.roles.cache.get(role2)
-        if (!role) return message.channel.send("Please provide a role to remove from the said user.")
+        var member = await getMember(bot, args, options, message, author, false, false, 0, false)
+        if (!member) return;
+
+
+        let role2 = options[1]
+        var role = await getRole(message, role2)
+        if (!role) return send(message, { content: "Please provide a role to remove from the said user." }, false)
         const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
-        if (role.rawPosition > botrole.rawPosition) {
-            const embed = new Discord.MessageEmbed()
-            embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to remove a role from the user!")
-            embed.setColor(0xff4a1f)
-            return await message.channel.send({ embeds: [embed] })
+
+        const embed = new Discord.MessageEmbed()
+        embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to remove a role from the user!")
+        embed.setColor(0xff4a1f)
+
+        if (role.rawPosition >= botrole.rawPosition) {
+            return send(message, { embeds: [embed] }, false)
         }
 
         const msgsend = new Discord.MessageEmbed()
         msgsend.setColor(0x00FFFF)
-        msgsend.setDescription(`<:Bluecheckmark:754538270028726342> The role, ${role.name}, has been removed from ${rmember.displayName}`)
+        msgsend.setDescription(`<:Bluecheckmark:754538270028726342> The role, ${role.name}, has been removed from ${member.displayName}`)
 
-        if (!rmember.roles.cache.has(role.id)) {
-            return message.channel.send(`${rmember.displayName}, don't have the role!`)
+        if (!member.roles.cache.has(role.id)) {
+            return send(message, { content: `${member.displayName}, don't have the role!` }, false)
         } else {
-            if (rmember.roles.remove(role.id).catch(e => console.log(e.message)))
-                return message.channel.send({ embeds: [msgsend] })
-
+            // if (member.roles.remove(role.id).catch(e => console.log(e.message)))
+            try {
+                member.roles.remove(role.id)
+            } catch (error) {
+                send(message, { embeds: embed }, false)
+            }
+            return send(message, { embeds: [msgsend] }, false)
         }
+
+
     }
 }
