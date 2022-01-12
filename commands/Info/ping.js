@@ -20,7 +20,7 @@ module.exports = {
     } else {
       message.reply('Loading data').then(async (msg) => {
         msg.delete()
-        message.reply(`🏓Latency is \`${Math.round(bot.ws.ping)}\`ms.`);
+        message.reply(`🏓Latency is \`${Math.round(bot.ws.ping)}ms\`.`);
       })
     }
   }
