@@ -18,7 +18,7 @@ module.exports = async (bot, Discord, Server, serverUser, youtube, message) => {
             await data.save().catch(e => console.log(e));
         }
         // console.log(data)
-        prefix = "="
+        prefix = data.prefix
 
         //added condition that if message starts with bot ping
         if (message.content.startsWith(prefix) || message.content.startsWith("<@!721460877005422634>")) {

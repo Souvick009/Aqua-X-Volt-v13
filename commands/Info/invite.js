@@ -16,7 +16,7 @@ module.exports = {
 
     run: async (bot, message, args) => {
 
-       send(message,`https://discord.com/api/oauth2/authorize?client_id=721460877005422634&permissions=1392039259222&scope=bot%20applications.commands`)
+        send(message, { content: `https://discord.com/api/oauth2/authorize?client_id=721460877005422634&permissions=1392039259222&scope=bot%20applications.commands` }, true)
 
     }
 

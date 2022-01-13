@@ -32,9 +32,7 @@ module.exports = {
 
         var member = await getMember(bot, args, options, message, author, false, false, 0, false)
 
-        if (!member) {
-            return send(message, { content: `You Need To Mention A User!` }, true)
-        }
+        if (!member) return
 
         //storing data in db according to total warns, member warned, guild id
 

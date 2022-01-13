@@ -38,9 +38,7 @@ module.exports = {
         //defining member who will get a warn and fetching id of him so member will be id of user mentioned
         var member = await getMember(bot, args, options, message, author, false, false, 0, false)
 
-        if (!member) {
-            return send(message, { content: `You Need To Mention A User!` }, true)
-        }
+        if (!member) return
 
         //storing data in db according to total warns, member warned, guild id
 
