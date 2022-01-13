@@ -85,6 +85,8 @@ module.exports = {
         let time = options[1];
         let reason = options[2]
 
+        if (!time) return send(message, { content: `You need to provide a timelimit` }, true)
+        
         if (time.toLowerCase() == "perm" || time.toLowerCase() == "permanent") {
             time = "perm"
         }
@@ -95,6 +97,9 @@ module.exports = {
             time = "perm"
             if (message.type == "DEFAULT" || message.type == "REPLY") {
                 reason = options[1]
+                if (reason.toLowerCase() == "perm" ||reason.toLowerCase() == "permanent") {
+                    reason = "None"
+                }
             }
         }
 
