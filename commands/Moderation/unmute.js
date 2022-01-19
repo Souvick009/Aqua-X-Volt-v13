@@ -82,7 +82,7 @@ module.exports = {
         if (muterole.rawPosition > botrole.rawPosition) {
             embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to remove a role from the user!")
             embed.setColor(0xff4a1f)
-            return send({
+            return send(message, {
                 embeds: [embed],
                 ephemeral: true
             }, true)

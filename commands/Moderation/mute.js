@@ -12,7 +12,7 @@ module.exports = {
     accessableby: "Manage Messages",
     description: "Mute a member so they cannot type or speak.",
     category: "Moderation",
-    usage: "=mute <user/userid> <limit> [reason] (For Temporary Mute) \n =mute <user> <perm> [reason] (For Permanent Mute) \n ***(__If you want to mute anyone for 1h 30m use 90m and for 2h just use 2h simple!__)***",
+    usage: "=mute <user/userid> <limit> [reason] (For Temporary Mute) \n =mute <user> [reason] (For Permanent Mute) \n =mute <user> <perm/permanent> [reason] (For Permanent Mute **Only For Slash Commands**) \n ***(__If you want to mute anyone for 1h 30m use 90m and for 2h just use 2h simple!__)***",
     example: "=mute @Real Warrior perm Abuse , =mute @Yashu 10m Spamming , =mute @Shander 1d Emoji Spamming",
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links, Manage Roles, Manage Messages",
@@ -72,12 +72,9 @@ module.exports = {
         }
         //main code-
 
-
         var person = await getMember(bot, args, options, message, author, false, false, 0, false)
 
-        if (!person) {
-            return send(message, { content: `You Need To Mention A User!` }, true)
-        }
+        if (!person) return
 
         if (person.permissions.has("ADMINISTRATOR")) return send(message, { content: "❌ You can not mute an Admin. This person seems to be an Admin of this server." }, true)
         const Createdd = Date.now()
@@ -85,24 +82,25 @@ module.exports = {
         let time = options[1];
         let reason = options[2]
 
-        if (!time) return send(message, { content: `You need to provide a timelimit` }, true)
-        
-        if (time.toLowerCase() == "perm" || time.toLowerCase() == "permanent") {
-            time = "perm"
-        }
+        if (!time) return send(message, { content: `You need to provide a timelimit.` }, true)
 
-        time = ms(time)
+        if (time) {
+            if (message.type == "APPLICATION_COMMAND") {
+                if (time.toLowerCase() == "perm" || time.toLowerCase() == "permanent") {
+                    time = "perm"
+                }
+            }
+            time = ms(time)
+        }
 
         if (!time) {
             time = "perm"
-            if (message.type == "DEFAULT" || message.type == "REPLY") {
-                reason = options[1]
-                if (reason.toLowerCase() == "perm" ||reason.toLowerCase() == "permanent") {
-                    reason = "None"
-                }
+            if (message.type !== "APPLICATION_COMMAND") {
+                reason = options[1] + " " + options[2]
+            } else {
+                reason = options[2]
             }
         }
-
 
         if (!isNaN(time)) {
             if (time < 60000) return send(message, { content: "Minimum time limit is 1 minute!" }, true)

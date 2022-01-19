@@ -212,10 +212,14 @@ module.exports = {
         }
 
         var length;
-        if (time.toLowerCase() == "0" || time.toLowerCase() == "off") {
-            removeTimeOut()
+        if (time) {
+            if (time.toLowerCase() == "0" || time.toLowerCase() == "off") {
+                removeTimeOut()
+            } else {
+                doTimeOut()
+            }
         } else {
-            doTimeOut()
+            return send(message, {content: `You need to specify the time!`})
         }
 
         if (message.type == "DEFAULT" || message.type == "REPLY") {

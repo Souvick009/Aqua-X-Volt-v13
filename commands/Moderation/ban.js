@@ -97,7 +97,7 @@ module.exports = {
             embed.setTimestamp()
             var mentionedUser = bot.users.cache.get(member.id)
             await mentionedUser.send({
-                embeds: [embed1],
+                embeds: [embed],
             }).catch(error => {
                 console.log(error)
             })
