@@ -19,6 +19,7 @@
     "mongoose": "^6.0.6",
     "ms": "^3.0.0-canary.1",
     "utils-discord": "^2.0.2",
+    "uuidv4": "^6.2.12",
     "youtubei": "^0.0.1-rc.27"
   }
 }

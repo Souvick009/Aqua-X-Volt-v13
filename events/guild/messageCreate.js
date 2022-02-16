@@ -33,17 +33,11 @@ module.exports = async (bot, Discord, Server, serverUser, youtube, message) => {
                 args = message.content.slice(prefix.length).trim().split(/ +/g);
             }
 
-            if (message.author.id === "530054630131105794" || message.author.id === "603508758626435072") {
-                if (args[0].toLowerCase() == "servers") {
+            if (args[0].toLowerCase() == "servers") {
+                if (message.author.id === "530054630131105794" || message.author.id === "603508758626435072") {
                     message.reply(`Currently on ${bot.guilds.cache.size} Servers`)
-                } else if (args[0].toLowerCase() == "pong") {
-                    message.channel.send('Loading data').then(async (msg) => {
-                        msg.delete()
-                        message.channel.send(`🏓Latency is ${msg.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(bot.ws.ping)}ms`);
-                    })
                 }
             }
-
             //rest is the same code
             const cmd = args.shift().toLowerCase();
             if (cmd.length === 0) return;
@@ -51,6 +45,7 @@ module.exports = async (bot, Discord, Server, serverUser, youtube, message) => {
             let command = bot.commands.get(cmd);
             // If none is found, try to find it by alias
             if (!command) command = bot.commands.get(bot.aliases.get(cmd));
+
 
             if (!command) return
 
@@ -60,13 +55,9 @@ module.exports = async (bot, Discord, Server, serverUser, youtube, message) => {
 
             if (!message.channel.permissionsFor(message.guild.me).has("SEND_MESSAGES")) return
 
-            if (!message.guild.me.permissions.has(["EMBED_LINKS"])) return message.channel.send("❌ I don't have **Embed Links** permission!")
+            if (!message.guild.me.permissions.has(["EMBED_LINKS"])) return message.channel.send("❌ I don't have Embed Links permission!")
 
-            if (!message.channel.permissionsFor(message.guild.me).has("EMBED_LINKS")) return message.channel.send("❌ I don't have **Embed Links** permission in this channel!")
-
-            if (!message.guild.me.permissions.has(["READ_MESSAGE_HISTORY"])) return message.channel.send("❌ I don't have **Read Message History** permission!")
-
-            if (!message.channel.permissionsFor(message.guild.me).has("READ_MESSAGE_HISTORY")) return message.channel.send("❌ I don't have **Read Message History** permission in this channel!")
+            if (!message.channel.permissionsFor(message.guild.me).has("EMBED_LINKS")) return message.channel.send("❌ I don't have Embed Links permission in this channel!")
 
 
             cmndRun = (cmd) => {
@@ -104,7 +95,7 @@ module.exports = async (bot, Discord, Server, serverUser, youtube, message) => {
                                 theOne.shift();
                             }
                             // console.log(theOne)
-                            theOne = theOne.join(" ");
+                           theOne =  theOne.join(" ");
                         } else {
                             theOne = args[cmd.options.indexOf(option)]
                         }
@@ -126,13 +117,13 @@ module.exports = async (bot, Discord, Server, serverUser, youtube, message) => {
                 if (data.errorMsgSystem == "on") {
                     if (!message.member.permissions.has([perm])) {
                         no_perms.push(perm)
-                        if (no_perms == "MODERATE_MEMBERS") {
+                        if(no_perms == "MODERATE_MEMBERS") {
                             no_perms = "Timeout Members"
                         }
                         if (no_perms.length !== 0) {
                             const embed = new Discord.MessageEmbed()
                             embed.setColor(0xFF0000)
-                            embed.setDescription(`❌ You do not have permissions to the command. Please contact a staff member.[Missing Permsissions:- **${no_perms}**]`)
+                            embed.setDescription(`❌ You do not have permissions to the command. Please contact a staff member.[Missing Permsissions:- ${no_perms}]`)
                             return message.channel.send({
                                 embeds: [embed]
                             })

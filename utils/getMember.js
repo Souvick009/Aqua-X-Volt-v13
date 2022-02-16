@@ -1,6 +1,5 @@
 const send = require("./sendMessage.js")
-module.exports = async (bot, args, options, message, author, self, botUsersFetch, num, dont_return, dont_send_msg) => {
-
+module.exports = async (bot, args, options, message, author, self, botUsersFetch, num, dont_return) => {
     var member;
     //if there are slash commands
     if (message.type == "APPLICATION_COMMAND") {
@@ -21,7 +20,7 @@ module.exports = async (bot, args, options, message, author, self, botUsersFetch
                 }
                 if (dont_return == false) {
                     if (!member) {
-                        send(message, { content: `<@${author.id}>, Invalid User using Application cmd` });
+                        send(message, { content: `<@${author.id}>, Invalid User! using Application cmd` });
                         return;
                     }
                 }
@@ -33,7 +32,7 @@ module.exports = async (bot, args, options, message, author, self, botUsersFetch
                 }
                 if (dont_return == false) {
                     if (!member) {
-                        send(message, { content: `<@${author.id}>, Invalid User using Application cmd` });
+                        send(message, { content: `<@${author.id}>, Invalid User! using Application cmd` });
                         return;
                     }
                 }
@@ -43,10 +42,8 @@ module.exports = async (bot, args, options, message, author, self, botUsersFetch
             if (self) {
                 member = await message.guild.members.fetch(author).catch(error => console.log())
             } else {
-                if (dont_send_msg) { return } else {
-                    send(message, { content: "Please specify the user!" })
-                    return;
-                }
+                send(message, { content: "Please specify the user!" })
+                return;
             }
         }
     } else {
@@ -87,11 +84,8 @@ module.exports = async (bot, args, options, message, author, self, botUsersFetch
             if (self) {
                 member = await message.guild.members.fetch(author).catch(error => console.log())
             } else {
-                if (dont_send_msg) { return } else {
-
-                    send(message, { content: "Please specify the user!" })
-                    return;
-                }
+                send(message, { content: "Please specify the user!" })
+                return;
             }
         };
     }

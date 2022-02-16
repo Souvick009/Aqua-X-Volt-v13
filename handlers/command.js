@@ -46,13 +46,13 @@ module.exports = (client) => {
 
     const rest = new REST({
         version: '9'
-    }).setToken("token");
+    }).setToken("NzIxNDYwODc3MDA1NDIyNjM0.XuU2zQ.aoHYWMfWsdOkkd4Epj0cKcaE4xw");
 
     (async () => {
         try {
             console.log('Started refreshing application (/) commands.');
             await rest.put(
-                Routes.applicationCommands("botUserId"), {
+                Routes.applicationCommands("721460877005422634"), {
                 body: commandss
             },
             );

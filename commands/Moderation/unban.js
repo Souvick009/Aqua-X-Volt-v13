@@ -1,5 +1,7 @@
 const Discord = require("discord.js");
+const ms = require('ms');
 const send = require("../../utils/sendMessage.js")
+const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "unban",
@@ -65,7 +67,7 @@ module.exports = {
             user = await bot.users.fetch(args).catch(error => console.log())
         }
 
-        if (message.type !== "APPLICATION_COMMAND") {
+        if (message.type == "DEFAULT" || message.type == "REPLY") {
             await message.delete().catch(error => console.log())
         }
 

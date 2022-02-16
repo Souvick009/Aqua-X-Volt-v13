@@ -1,6 +1,11 @@
 const Discord = require("discord.js");
 const serverUser = require("../../model/serverUser.js")
+const server = require("../../model/server.js")
 const perms = Discord.Permissions.FLAGS
+var {
+    uuid
+} = require("uuidv4")
+const moment = require("moment");
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 
@@ -54,9 +59,10 @@ module.exports = {
         var member = await getMember(bot, args, options, message, author, false, false, 0, false)
 
         if (!member) return;
-        if (member.id == "721460877005422634") return send(message, { content: "You can't warn me" }, true)
+
         //storing data in db according to total warns, member warned, guild id
         const Createdd = Date.now()
+        const iddd = uuid()
         let reason = options[1]
 
         if (member.permissions.has(perms.ADMINISTRATOR)) return send(message, { content: `❌ You can not warn an Admin. This person seems to be an Admin of this server.` }, true)
@@ -80,6 +86,7 @@ module.exports = {
                 var warnObj = {
                     administrator: author.tag,
                     reason: reason,
+                    id: iddd,
                     date: Createdd
                 };
                 newUser.warns.push(warnObj);
@@ -89,6 +96,7 @@ module.exports = {
                 var warnObj = {
                     administrator: author.tag,
                     reason: reason,
+                    id: iddd,
                     date: Createdd
                 };
                 user.warns.push(warnObj);
@@ -96,7 +104,7 @@ module.exports = {
             }
         })
 
-        if (message.type !== "APPLICATION_COMMAND") {
+        if (message.type == "DEFAULT" || message.type == "REPLY") {
             await message.delete().catch(error => console.log(error));
         }
 
@@ -116,11 +124,7 @@ module.exports = {
         await dmUser.send({
             embeds: [embed],
         }).catch(error => {
-            if (error.code === 50007) {
-                return
-            } else {
                 console.log(error);
-            }
         });
         // try {
 

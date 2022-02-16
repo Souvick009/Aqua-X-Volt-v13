@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const send = require("../../utils/sendMessage.js")
 
+
 module.exports = {
 
     name: "serverinfo",
@@ -42,14 +43,6 @@ module.exports = {
             HIGH: "High",
             VERY_HIGH: "Highest"
         }
-
-        const boostTier = {
-            NONE: "Level 0",
-            TIER_1: "Level 1",
-            TIER_2: "Level 2",
-            TIER_3: "Level 3",
-        }
-        
         const afk = serv.afkChannel || 'Not Set'
 
         const formatDate = function (date) {
@@ -58,11 +51,10 @@ module.exports = {
 
         const created = formatDate(message.guild.createdAt);
 
+        const joined = formatDate(message.member.joinedAt);
+
         let inline = true
-        let sicon = message.guild.iconURL({
-            dynamic: true,
-            size: 1024
-        });
+        let sicon = message.guild.iconURL();
 
         // await message.guild.members.fetch(message.guild.ownerID) // Fetches owner
         //     .then(guildMember => sOwner = guildMember) // sOwner is the owner
@@ -70,11 +62,15 @@ module.exports = {
         var owner = await message.guild.fetchOwner();
         // var ownerid = message.guild.ownerId
         // var owner = message.guild.members.cache.get(ownerid);
-
+        var roleSize = message.guild.roles.cache.size
+        // if (roleSize = "") {
+        //     roleSize = 0
+        // }
+        // console.log(owner.username)
         let serverembed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setThumbnail(sicon)
-            .setAuthor({ name: `Information About The Server` })
+            .setAuthor({ name: message.guild.name })
             .addField("__Server Name:__", message.guild.name, inline)
             .addField("__Server ID:__", message.guild.id, inline)
             .addField("__Server Owner:__", owner.user.tag, inline)
@@ -82,15 +78,13 @@ module.exports = {
             .addField(`__AFK Timeout:__`, `${serv.afkTimeout}s`, inline)
             .addField(`__Creation of Guild:__`, `${serv.createdAt}`, inline)
             .addField(`__Explicit Content Filter Level:__`, eFC, inline)
-            .addField("__Verification Level:__", verlvl[message.guild.verificationLevel], inline)
+            .addField("__Verification Level:__", `${verlvl[message.guild.verificationLevel]}`, inline)
             .addField("__Members:__", `${message.guild.memberCount}`, inline)
             .addField("__Roles:__", message.guild.roles.cache.size.toString(), inline)
-            .addField("__Server Boosters:__", ((message.guild.premiumSubscriptionCount == 0 || null) ? "NONE" : message.guild.premiumSubscriptionCount.toString()), inline)
-            .addField("__Boost Tier:__", boostTier[message.guild.premiumTier], inline)
             .addField("__Total Channels:__", message.guild.channels.cache.filter(c => c.type !== "GUILD_CATEGORY").size.toString(), inline)
             .addField("__Text Channels:__", message.guild.channels.cache.filter(c => c.type === "GUILD_TEXT").size.toString(), inline)
             .addField("__Voice Channels:__", message.guild.channels.cache.filter(c => c.type === "GUILD_VOICE").size.toString(), inline)
-            .setImage(message.guild.bannerURL())
+            .addField("__You Joined:__", joined, inline)
             .setFooter({ text: `Server Created: ${created}` });
         send(message, { embeds: [serverembed] });
     }

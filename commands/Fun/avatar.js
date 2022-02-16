@@ -3,9 +3,10 @@ const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js")
 
 module.exports = {
+
     name: "avatar",
     description: "Shows avatar of a user",
-    usage: "=avatar [user]",
+    usage: "<command | alias> || <@user>",
     example: "=avatar \n =avatar @Real Warrior",
     accessableby: "Manage Messages",
     cooldown: 5,
@@ -39,7 +40,7 @@ module.exports = {
         var hexes = member.displayHexColor
 
         let embed = new Discord.MessageEmbed()
-            .setImage(member.displayAvatarURL({
+            .setImage(member.user.displayAvatarURL({
                 format: 'png',
                 dynamic: true,
                 size: 1024

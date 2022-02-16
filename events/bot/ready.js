@@ -12,8 +12,6 @@ module.exports = async (bot, Discord, Server, serverUser, youtube) => {
         }],
         status: 'idle'
     });
-
-    // Bot off jaane ke baad jab online aayega tab bhi Muted member se role nahi hatega aur jinka unmute ka time hogye hai unse hatt jayega
     serverUser.find({
         muteStatus: "Muted",
     }, async (err, users) => {
@@ -91,69 +89,42 @@ module.exports = async (bot, Discord, Server, serverUser, youtube) => {
         })
     })
 
-    // bot online aane ke baad jo timedout users ka timeout duration over hogya hai unka db mai status hatadega
-    serverUser.find({
-        timeoutStatus: "Timedout",
-    }, async (err, users) => {
-        if (err) console.log(err);
-        if (!users || users.length == 0) return;
-        users.forEach(async (user) => {
-            var latestTimeout = user.timeouts[user.timeouts.length - 1]
-            if (!latestTimeout) return
 
-            if (latestTimeout.duration + latestTimeout.date < Date.now()) {
-                // agar timedout duration over hogya ho toh
-                user.timeoutStatus = ""
-                await user.save().catch(e => console.log(e));
+    // async function subCounter() {
+    //     bot.guilds.cache.forEach(guild => {
+    //         Server.findOne({
+    //             serverID: guild.id
+    //         }, async (err, data) => {
+    //             if (err) console.log(err);
+    //             if (!data) return
+    //             if (data.length == 0) return
+    //             if (!data.subCounterChannel || data.subCounterChannel == "") return
+    //             try {
+    //                 var channel = await bot.channels.fetch(data.subCounterChannel)
+    //             } catch (error) {
+    //                 data.subCounterChannel = ""
+    //                 data.ytChannel = ""
+    //                 await data.save().catch(e => console.log(e));
+    //                 return
+    //             }
 
-            } else if (latestTimeout.duration + latestTimeout.date > Date.now()) {
-                // agar timeout duration over nahi hua ho toh
+    //             var yt = data.ytChannel
+    //             var channelName = channel.name
 
-                var timeLength = latestTimeout.duration + latestTimeout.date - Date.now()
-                setTimeout(async () => {
-                    user.timeoutStatus = ""
-                    await user.save().catch(e => console.log(e));
-                }, timeLength)
-            }
-        })
-    })
+    //             const searchChannel = await youtube.search(yt, {
+    //                 type: "channel", // video | playlist | channel | all
+    //             });
 
+    //             let totalSubs = await searchChannel[0].subscriberCount
 
-    // // async function subCounter() {
-    // //     bot.guilds.cache.forEach(guild => {
-    // //         Server.findOne({
-    // //             serverID: guild.id
-    // //         }, async (err, data) => {
-    // //             if (err) console.log(err);
-    // //             if (!data) return
-    // //             if (data.length == 0) return
-    // //             if (!data.subCounterChannel || data.subCounterChannel == "") return
-    // //             try {
-    // //                 var channel = await bot.channels.fetch(data.subCounterChannel)
-    // //             } catch (error) {
-    // //                 data.subCounterChannel = ""
-    // //                 data.ytChannel = ""
-    // //                 await data.save().catch(e => console.log(e));
-    // //                 return
-    // //             }
+    //             let subs = totalSubs.split(" ")[0]
 
-    // //             var yt = data.ytChannel
-    // //             var channelName = channel.name
+    //             var name = channelName.split(" ")[0]
+    //             channel.edit({ name: `${name} ${subs}` })
+    //                 .catch(console.error);
+    //         })
+    //     })
+    // }
 
-    // //             const searchChannel = await youtube.search(yt, {
-    // //                 type: "channel", // video | playlist | channel | all
-    // //             });
-
-    // //             let totalSubs = await searchChannel[0].subscriberCount
-
-    // //             let subs = totalSubs.split(" ")[0]
-
-    // //             var name = channelName.split(" ")[0]
-    // //             channel.edit({ name: `${name} ${subs}` })
-    // //                 .catch(console.error);
-    // //         })
-    // //     })
-    // // }
-
-    // // setInterval(subCounter, 1800000)
+    // setInterval(subCounter, 1800000)
 }

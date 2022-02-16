@@ -2,7 +2,6 @@ const { MessageEmbed } = require("discord.js");
 const { stripIndents } = require("common-tags");
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
-const moment = require("moment");
 
 module.exports = {
 
@@ -31,7 +30,7 @@ module.exports = {
 
         // Member variables
         const formatDate = function (date) {
-            return moment(date).format("ddd, MMM Do YYYY, h:mm a");
+            return new Intl.DateTimeFormat('en-US').format(date)
         }
         const joined = formatDate(member.joinedAt);
         const roles = member.roles.cache

@@ -51,27 +51,21 @@ module.exports = {
             }, true)
         }
 
-        if (message.type !== "APPLICATION_COMMAND") {
+        if (message.type == "DEFAULT" || message.type == "REPLY") {
             await message.delete().catch(error => console.log(error))
         }
 
-        let count = parseInt(options[0])
-        console.log(options)
+        let count = options[0]
+
         let input = options[1]
-        if (!count) return send(message, {
-            content: `<@${author.id}> Please tell how many message do you want to delete`
-        }, false)
+        if (!count) return send(message, { content: `<@${author.id}> Please tell how many message do you want to delete` }, false)
 
         if (!Number(count)) {
-            return send(message, {
-                content: `<@${author.id}> Please enter a valid number!`
-            }, false)
+            return send(message, { content: `<@${author.id}> Please enter a valid number!` }, false)
         }
 
         if (!(0 <= Number(count) && Number(count) <= 100)) {
-            return send(message, {
-                content: `<@${author.id}> You can delete max 100 at once!`
-            }, false)
+            return send(message, { content: `<@${author.id}> You can delete max 100 at once!` }, false)
         };
 
         // if (!message.deletable) {
@@ -85,155 +79,90 @@ module.exports = {
         if (input) {
             if (input.toLowerCase() == "self") {
                 // this command will delete messages sent by Aqua X Volt
-                var messages = await message.channel.messages.fetch({
+                message.channel.messages.fetch({
                     limit: 100
-                })
-                var totalMessages = [...messages.filter(m => m.author.id === bot.user.id).values()]
-                console.log(count)
-                var newMessages = totalMessages.slice(0, count)
-                newMessages.forEach(m => {
-                    console.log(m.content)
-                })
-                // console.log(typeof(totalMessages))
-                // console.log(Array.from(totalMessages.values).slice(totalMessages.length-count, totalMessages.length))
-                if (!newMessages) return send(message, {
-                    content: `<@${author.id}>, No messages found by the bot in this channel!`
-                }, false)
-                count = newMessages.length
-                try {
-                    await message.channel.bulkDelete(newMessages)
-                } catch (error) {
-                    console.log(error)
-                    return send(message, {
-                        content: `<@${author.id}> Unable to delete those messages which are 14 days older or more!`
-                    }, false)
-                }
+                }).then((messages) => {
 
-                if (message.type == "APPLICATION_COMMAND") {
-                    return send(message, {
-                        content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages of Aqua X Volt`,
-                        ephemeral: true
-                    }, false)
-                } else {
-                    return send(message, {
-                        content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages of Aqua X Volt`
-                    }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 50));
-                }
-
+                    var totalMessages = messages.filter(m => m.author.id === "698905405061070909")
+                    var newMessages = Array.from(totalMessages.values()).slice(0, count)
+                    // if (message.content.includes("@here") || message.content.includes("@everyone")) return
+                    if (!newMessages) return send(message, { content: `<@${author.id}>, No messages found by the bot in this channel!` }, false)
+                    var count = newMessages.length
+                    try {
+                        message.channel.bulkDelete(newMessages)
+                    } catch (error) {
+                        return send(message, { content: `<@${author.id}>, Unable to delete those messages which are 14 days older or more!` }, false)
+                    }
+                    if (message.type == "APPLICATION_COMMAND") {
+                        return send(message, { content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages of Aqua X Volt` }, false)
+                    } else {
+                        return send(message, { content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages of Aqua X Volt` }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 1000));
+                    }
+                })
             } else if (input.toLowerCase() == "invites") {
                 // this command will delete server invites present in the channel (limit - 100)
-                console.log(" count " + count)
-
-                var messages = await message.channel.messages.fetch({
+                message.channel.messages.fetch({
                     limit: 100
+                }).then((messages) => {
+                    var totalMessages = messages.filter(msg => msg.content.toLowerCase().includes("discord.gg/") || msg.content.toLowerCase().includes("https://www.discord.gg/"))
+                    var newMessages = Array.from(totalMessages.values()).slice(0, count)
+                    // if (message.content.includes("@here") || message.content.includes("@everyone")) return
+                    if (!newMessages) return send(message, { content: `<@${author.id}>, No server invites found in this channel!` }, false)
+
+                    var count = newMessages.length
+                    try {
+                        message.channel.bulkDelete(newMessages)
+                    } catch (error) {
+                        return send(message, { content: `<@${author.id}>, Unable to delete those messages which are 14 days older or more!` }, false)
+                    }
+                    if (message.type == "APPLICATION_COMMAND") {
+                        return send(message,
+                            `<:Bluecheckmark:754538270028726342> Cleared ${count} Server Invites`, false)
+                    } else {
+                        return send(message, { content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Server Invites` }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 1000));
+                    }
                 })
-                var totalMessages = [...messages.filter(m => m.content.toLowerCase().includes("discord.gg/") || m.content.toLowerCase().includes("https://www.discord.gg/")).values()]
-                console.log(count)
-                var newMessages = totalMessages.slice(0, count)
-                newMessages.forEach(m => {
-                    console.log(m.content)
-                })
-
-                if (!newMessages) return send(message, {
-                    content: `<@${author.id}>, No server invites found in this channel!`
-                }, false)
-
-                count = newMessages.length
-                try {
-                    await message.channel.bulkDelete(newMessages)
-                } catch (error) {
-                    console.log(error)
-                    return send(message, {
-                        content: `<@${author.id}> Unable to delete those messages which are 14 days older or more!`
-                    }, false)
-                }
-
-                if (message.type == "APPLICATION_COMMAND") {
-                    return send(message, {
-                        content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Server Invites`,
-                        ephemeral: true
-                    }, false)
-                } else {
-                    return send(message, {
-                        content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Server Invites`
-                    }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 50));
-                }
             } else if (input) {
-                var user = await getMember(bot, args, options, message, author, false, true, 1, true)
-                var iD;
-
-                if (!user) {
-                    iD = input
-                } else {
-                    iD = user.id
-                }
-
-                console.log(" count " + count)
-
-                var messages = await message.channel.messages.fetch({
-                    limit: 100
-                })
-                var totalMessages = [...messages.filter(m => m.author.id === iD).values()]
-                console.log(count)
-                var newMessages = totalMessages.slice(0, count)
-                newMessages.forEach(m => {
-                    console.log(m.content)
-                })
-                // console.log(typeof(totalMessages))
-                // console.log(Array.from(totalMessages.values).slice(totalMessages.length-count, totalMessages.length))
-                if (!newMessages) return send(message, {
-                    content: `<@${author.id}>,No messages found send by the user!`
-                }, false)
-                count = newMessages.length
+                var user = await getMember(bot, args, options, message, author, false, true, 1, false)
                 try {
-                    await message.channel.bulkDelete(newMessages)
+                    if (!user) return send(message, { content: `<@${author.id}>, User not found!` }, false);
                 } catch (error) {
-                    console.log(error)
-                    return send(message, {
-                        content: `<@${author.id}> Unable to delete those messages which are 14 days older or more!`
-                    }, false)
+                    if (!user) return send(message, { content: `<@${author.id}>, User not found!` }, false);
                 }
-                if (message.type == "APPLICATION_COMMAND") {
-                    if (user) {
-                        return send(message, {
-                            content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages Of ${user.user.username}#${user.user.discriminator}`,
-                            ephemeral: true
-                        }, false)
-                    } else {
-                        return send(message, {
-                            content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages`
-                        }, false)
+
+                message.channel.messages.fetch({
+                    limit: 100
+                }).then((messages) => {
+
+                    var totalMessages = messages.filter(m => m.author.id === user.id)
+                    var newMessages = Array.from(totalMessages.values()).slice(0, count)
+                    if (!newMessages) return send(message, { content: `<@${author.id}>,No messages found send by the user!` }, false)
+                    var count = newMessages.length
+                    try {
+                        message.channel.bulkDelete(newMessages)
+                    } catch (error) {
+                        return send(message, { content: `<@${author.id}> Unable to delete those messages which are 14 days older or more!` }, false)
                     }
-                } else {
-                    if (user) {
-                        return send(message, {
-                            content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages Of ${user.user.username}#${user.user.discriminator}`
-                        }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 50));
+                    if (message.type == "APPLICATION_COMMAND") {
+                        return send(message, { content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages Of ${user.user.username}#${user.user.discriminator}` }, false)
                     } else {
-                        return send(message, {
-                            content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages`
-                        }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 50));
+                        return send(message, { content: `<:Bluecheckmark:754538270028726342> Cleared ${count} Messages Of ${user.user.username}#${user.user.discriminator}` }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 1000));
                     }
-                }
+
+                })
             }
         } else {
             try {
                 await message.channel.bulkDelete(count)
             } catch (error) {
-                return send(message, {
-                    content: `<@${author.id}> Unable to delete those messages which are 14 days older or more!`
-                }, false)
+                return send(message, { content: `<@${author.id}> Unable to delete those messages which are 14 days older or more!` }, false)
             }
 
             if (message.type == "APPLICATION_COMMAND") {
-                return send(message, {
-                    content: '<:Bluecheckmark:754538270028726342> Cleared!',
-                    ephemeral: true
-                }, false)
+                return send(message, { content: '<:Bluecheckmark:754538270028726342> Cleared!' }, false)
             } else {
-                return send(message, {
-                    content: '<:Bluecheckmark:754538270028726342> Cleared!'
-                }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 50));
+                return send(message,
+                    { content: '<:Bluecheckmark:754538270028726342> Cleared!' }, false).then(msg => setTimeout(() => msgDelete(message, msg).catch(error => console.log(error)), 1000));
             }
 
         }
