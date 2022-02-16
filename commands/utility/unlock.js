@@ -1,7 +1,5 @@
 const Discord = require("discord.js");
-const ms = require('ms');
 const send = require("../../utils/sendMessage.js")
-const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "unlock",
@@ -43,24 +41,9 @@ module.exports = {
             }, true)
         }
 
-
-
-
         let channel = options[0]
-        // let channel;
-        // if (!args[0]) {
-        //     channel = message.channel
-        // } else {
-        //     channel = message.mentions.channels.first() || message.guild.channels.cache.get(args[0])
-        // }
-        // if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return message.reply(`❌ I don't have Manage Channels permission in <#${channel.id}>!`)
-        // if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return message.channel.send("Cannot unlock an already unlocked channel")
-        // channel.updateOverwrite(message.channel.guild.roles.everyone, { SEND_MESSAGES: false }).then(() => {
-        //     message.channel.send(`Succesfully unlocked the channel <#${channel.id}>`)
-        // }).catch(err => {
-        //     console.log(err)
-        // })
-        if (!channel === undefined) {
+
+        if (channel === undefined) {
             channel = message.channel
         } else {
             if (message.type == "APPLICATION_COMMAND") {

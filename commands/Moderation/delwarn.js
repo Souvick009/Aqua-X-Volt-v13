@@ -1,9 +1,7 @@
 const Discord = require("discord.js");
 const serverUser = require("../../model/serverUser.js")
-const server = require("../../model/server.js")
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
-
 
 module.exports = {
     name: "delwarn",

@@ -1,5 +1,4 @@
 const Discord = require("discord.js");
-const { stripIndents } = require("common-tags");
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 
@@ -58,7 +57,7 @@ module.exports = {
         }
 
         const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
-        if (!botrole) return send(message, { content: ` It seems that my role isn't assigned to me, re-invite me to fix it or make a role named "Aqua X Volt (Beta testing)" and assign it to me.` }, true)
+        if (!botrole) return send(message, { content: ` It seems that my role isn't assigned to me, re-invite me to fix it or make a role named "Aqua X Volt" and assign it to me.` }, true)
 
         if (member.user.id === message.guild.ownerID) {
             const embed = new Discord.MessageEmbed()
@@ -74,7 +73,7 @@ module.exports = {
             return send(message, { embeds: [embed] }, true)
         }
 
-        if (message.type == "DEFAULT" || message.type == "REPLY") {
+        if (message.type !== "APPLICATION_COMMAND") {
             await message.delete().catch(error => console.log(error))
         }
 

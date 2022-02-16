@@ -42,22 +42,29 @@ module.exports = {
         const created = formatDate(member.user.createdAt);
 
         const embed = new MessageEmbed()
-            .setFooter({ text: "Searched by " + author.username, iconURL: author.displayAvatarURL() })
-            .setThumbnail(member.user.displayAvatarURL({
-                format: 'png',
-                dynamic: true,
-                size: 1024
-            }))
-            .setColor(member.displayHexColor === '#000000' ? 'RANDOM' : member.displayHexColor)
+        embed.setFooter({ text: "Searched by " + author.username, iconURL: author.displayAvatarURL() })
+        embed.setThumbnail(member.user.displayAvatarURL({
+            format: 'png',
+            dynamic: true,
+            size: 1024
+        }))
+        embed.setColor(member.displayHexColor === '#000000' ? 'RANDOM' : member.displayHexColor)
+        embed.addField(`Username:`, member.user.username, true)
+        if (member.displayName !== member.user.username) {
+            embed.addField(`Display name:`, member.displayName, true)
+        }
+        embed.addField(`Created at:`, created, true)
+        embed.addField(`Joined at:`, joined, true)
+        embed.addField(`Roles:`, roles, false)
 
-            .addField('Member information:', stripIndents`**> Display name:** ${member.displayName}
-                **> Joined at:** ${joined}
-                **> Roles:** ${roles}`, true)
+            // .addField('Member information:', stripIndents`**> Display name:** ${member.displayName}
+            //     **> Joined at:** ${joined}
+            //     **> Roles:** ${roles}`, true)
 
-            .addField('User information:', stripIndents`**> ID:** ${member.user.id}
-                **> Username:** ${member.user.username}
-                **> Tag:** ${member.user.tag}
-                **> Created at:** ${created}`, true)
+            // .addField('User information:', stripIndents`**> ID:** ${member.user.id}
+            //     **> Username:** ${member.user.username}
+            //     **> Tag:** ${member.user.tag}
+            //     **> Created at:** ${created}`, true)
 
             .setTimestamp()
         send(message, { embeds: [embed] });

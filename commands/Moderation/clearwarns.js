@@ -1,6 +1,5 @@
 const Discord = require("discord.js");
 const ServerUser = require("../../model/serverUser.js")
-const server = require("../../model/server.js")
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 

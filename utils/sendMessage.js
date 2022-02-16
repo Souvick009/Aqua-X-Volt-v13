@@ -1,21 +1,21 @@
-module.exports = (message, toSend, reply, ephemeral) => {
+module.exports = async (message, toSend, reply, ephemeral) => {
     var m;
     if (message.type == "APPLICATION_COMMAND") {
         if (!toSend.ephemeral) {
             if (toSend.embeds && !toSend.components) {
-                m = message.reply({
+                m = await message.reply({
                     embeds: toSend.embeds,
                     fetchReply: true
                 })
             }
             if (!toSend.embeds) {
-                m = message.reply({
+                m =  await message.reply({
                     content: toSend.content,
                     fetchReply: true
                 })
             }
             if (toSend.components && toSend.embeds) {
-                m = message.reply({
+                m = await message.reply({
                     components: toSend.components,
                     embeds: toSend.embeds,
                     fetchReply: true
@@ -23,21 +23,21 @@ module.exports = (message, toSend, reply, ephemeral) => {
             }
         } else {
             if (toSend.embeds && !toSend.components) {
-                m = message.reply({
+                m = await message.reply({
                     embeds: toSend.embeds,
                     ephemeral: true
                 })
 
             }
             if (!toSend.embeds) {
-                m = message.reply({
+                m = await message.reply({
                     content: toSend.content,
                     ephemeral: true
 
                 })
             }
             if (toSend.components && toSend.embeds) {
-                m = message.reply({
+                m = await message.reply({
                     components: toSend.components,
                     embeds: toSend.embeds,
                     ephemeral: true
@@ -48,13 +48,13 @@ module.exports = (message, toSend, reply, ephemeral) => {
     } else {
         if (toSend.embeds && !toSend.components) {
             if (reply) {
-                m = message.reply({
+                m = await message.reply({
                     embeds: toSend.embeds,
                     fetchReply: true
                 })
 
             } else {
-                m = message.channel.send({
+                m = await message.channel.send({
                     embeds: toSend.embeds,
                     fetchReply: true
                 })
@@ -64,9 +64,9 @@ module.exports = (message, toSend, reply, ephemeral) => {
         }
         if (!toSend.embeds) {
             if (reply) {
-                m = message.reply(toSend.content)
+                m = await message.reply(toSend.content)
             } else {
-                m = message.channel.send(toSend.content)
+                m = await message.channel.send(toSend.content)
             }
         }
         if (toSend.components && toSend.embeds) {
@@ -74,7 +74,7 @@ module.exports = (message, toSend, reply, ephemeral) => {
 
             if (reply) {
 
-                m = message.reply({
+                m = await message.reply({
                     components: toSend.components,
                     embeds: toSend.embeds
                 })
@@ -82,7 +82,7 @@ module.exports = (message, toSend, reply, ephemeral) => {
 
             } else {
 
-                m = message.channel.send({
+                m = await message.channel.send({
                     components: toSend.components,
                     embeds: toSend.embeds
                 })

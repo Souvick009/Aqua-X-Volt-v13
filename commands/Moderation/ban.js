@@ -1,5 +1,4 @@
 const Discord = require("discord.js");
-const ms = require('ms');
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 
@@ -62,7 +61,7 @@ module.exports = {
 
         var embed = new Discord.MessageEmbed()
 
-        var member = await getMember(bot, args, options, message, author, false, false, 0, true)
+        var member = await getMember(bot, args, options, message, author, false, false, 0, true, true)
 
         if (member) {
             const guildMember = message.guild.members.cache.get(member.id);
@@ -101,14 +100,28 @@ module.exports = {
             }).catch(error => {
                 console.log(error)
             })
-
         }
-
-
-
 
         async function guildmemberBan() {
             const guildMember = message.guild.members.cache.get(member.id);
+            var memberRole;
+            try {
+                memberRole = member.roles.highest
+            } catch (error) {
+                return send(message, { content: `Something gone wrong!` }, true)
+            }
+
+            const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
+            if (memberRole.rawPosition > botrole.rawPosition) {
+                const embed = new Discord.MessageEmbed()
+                embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to ban the user!")
+                embed.setColor(0xff4a1f)
+                return send(message, {
+                    embeds: [embed],
+                    ephemeral: true
+                }, false)
+            }
+
             var fetchBans = await message.guild.bans.fetch();
             var currentBan = fetchBans.get(member.id)
             if (currentBan) return message.channel.send(`<@${author.id}>, This user is already banned from the server`)
@@ -136,9 +149,16 @@ module.exports = {
             });
         }
 
+
+        //ban using id
         async function guildBan() {
-            if (isNaN(input)) return send(message, { content: `Either the user is not present in the server or the user doesn't exist on the discord, try to use the user id instead` }
-                , false)
+            // console.log(member)
+            if (!input) return send(message, { content: "Please specify the user!" })
+
+            if (isNaN(input) && !member) return send(message, {
+                content: `Either the user is not present in the server or the user doesn't exist on the discord, try to use the user id instead`
+            }, false)
+
             var fetchBans = await message.guild.bans.fetch();
             // console.log(input)
             var currentBan = fetchBans.get(input)
@@ -155,11 +175,8 @@ module.exports = {
                         embeds: [embed1]
                     }, false)
                 }
-
             }).catch(err => {
-                send(message, { content: 'I was unable to ban the member' }
-                    , false);
-                console.log(err);
+                send(message, { content: 'I was unable to ban the member' }, false);
             });
         }
 

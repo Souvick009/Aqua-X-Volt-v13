@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
 const ms = require('ms');
 const send = require("../../utils/sendMessage.js")
-const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "lock",
@@ -54,8 +53,8 @@ module.exports = {
 
         // await message.delete();
 
-        function timeLock() {
-            
+        async function timeLock() {
+
             if (time.length > 100) return send(message, { content: `The time exceeds the limit.` }, true)
 
             let newTime;
@@ -94,8 +93,11 @@ module.exports = {
 
             if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return send(message, { content: `❌ I don't have Manage Channels permission in <#${channel.id}>!` }, true)
             if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return send(message, { content: "Cannot lock an already locked channel" },)
-            channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
+            await channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
                 SEND_MESSAGES: false
+            })
+            await channel.permissionOverwrites.edit(message.guild.me, {
+                SEND_MESSAGES: true
             }).then(() => {
                 send(message, { content: `Succesfully locked the channel <#${channel.id}> for ${newTime}` }, true)
             }).catch(err => {
@@ -109,9 +111,9 @@ module.exports = {
             }, ms(time));
         }
 
-        function permLock() {
+        async function permLock() {
 
-            if (!channel === undefined) {
+            if (channel === undefined) {
                 channel = message.channel
             } else {
                 if (message.type == "APPLICATION_COMMAND") {
@@ -136,10 +138,12 @@ module.exports = {
             if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return send(message, { content: `❌ I don't have Manage Channels permission in <#${channel.id}>!` }, true)
             if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return send(message, { content: "Cannot lock an already locked channel" }, false)
             try {
-                channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
+                await channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
                     SEND_MESSAGES: false
+                })
+                await channel.permissionOverwrites.edit(message.guild.me, {
+                    SEND_MESSAGES: true
                 }).then(() => {
-
                     send(message, { content: `Succesfully locked the channel <#${channel.id}>` }, true)
                 })
             } catch (err) {
@@ -163,7 +167,5 @@ module.exports = {
         } else {
             timeLock()
         }
-
     }
-
 }

@@ -47,9 +47,11 @@ module.exports = {
 
             rolename = options[0]
             input = options[1]
+            if (!rolename) return send(message, { content: "Please provide a name for creating a role." }, true)
+            if (rolename.length > 100) return send(message, { content: `For role name maximum character is 100` }, true,)
+
             if (input) {
                 if (input.startsWith("#")) {
-                    console.log(input)
                     colorname = input
                     if (colorname.length > 7 || colorname.length < 7) return send(message, { content: `Only 6 digits are allowed in Hex Color Code` }, true, true)
                 } else {
@@ -62,6 +64,9 @@ module.exports = {
             input = "#000000"
             var argss = args
             rolename = args.join(" ")
+            if (!rolename) return send(message, { content: "Please provide a name for creating a role." }, true)
+            if (rolename.length > 100) return send(message, { content: `For role name maximum character is 100` }, true,)
+            
             if (args[args.length - 1].startsWith("#")) {
                 input = args[args.length - 1]
                 if (input.length > 7) return message.reply(`Only 6 digits are allowed in Hex Color Code`)
@@ -69,23 +74,26 @@ module.exports = {
                 rolename = argss.join(" ")
             }
         }
-        
+
         // let role1 = (args[args.length - 1])
         if (!rolename) return send(message, { content: "Please provide a name for creating a role." }, true)
 
-        if (rolename.length > 100) return send(message, { content: `For role name maximum character is 100` },
-            true, true)
+        if (rolename.length > 100) return send(message, { content: `For role name maximum character is 100` }, true,)
+        const embed = new Discord.MessageEmbed()
+        embed.setColor(0xFF0000)
+        embed.setDescription(`:x: Something went wrong, please check the command and try again.`)
 
-
-        message.guild.roles.create({
+        var creating = message.guild.roles.create({
             name: rolename,
             color: input,
             reason: `Created by ${author.tag}`,
-        })
-            .then((role) => {
-                send(message, { content: `<:Bluecheckmark:754538270028726342> ${role.name} role was created.` }, false);
-            })
-            .catch((err) => console.log(err));
+        }).then((role) => {
+            send(message, { content: `<:Bluecheckmark:754538270028726342> ${role.name} role was created.` }, false);
+        }).catch((err) => send(message, {
+            embeds: [embed],
+            ephemeral: true
+        }, true));
+
     }
 
 }

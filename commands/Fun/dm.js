@@ -48,7 +48,7 @@ module.exports = {
                 ephemeral: true
             }, true);
         }
-        if (message.type == "DEFAULT" || message.type == "REPLY") {
+        if (message.type !== "APPLICATION_COMMAND") {
             await message.delete().catch(error => console.log(error))
         }
         var mentionedUser = await getMember(bot, args, options, message, author, false, false, 0, false)
@@ -71,8 +71,11 @@ module.exports = {
         await mentionedUser.send({
             embeds: [dmEmbed],
         }).catch(error => {
-            console.log(error)
-            blocked = true;
+            if (error.code === 50007) {
+                blocked = true;
+            } else {
+                console.log(error)
+            }
         }).finally(async () => {
             if (blocked) {
                 const errEmbed = new Discord.MessageEmbed();

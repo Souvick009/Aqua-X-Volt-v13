@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 const getRole = require("../../utils/getRole.js")
+
 module.exports = {
     name: "addrole",
     aliases: ["ar"],
@@ -94,7 +95,7 @@ module.exports = {
         msgsend.setColor(0x00FFFF)
         msgsend.setDescription(`<:Bluecheckmark:754538270028726342> The role, ${role.name}, has been added to ${rmember.displayName}`)
 
-        if (message.type == "DEFAULT" || message.type == "REPLY") {
+        if (message.type !== "APPLICATION_COMMAND") {
             await message.delete().catch(error => console.log(error))
         }
 

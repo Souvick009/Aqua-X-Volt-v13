@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const server = require("../../model/server.js")
 const send = require("../../utils/sendMessage.js")
-const getMember = require("../../utils/getMember.js");
+const Utils = require("utils-discord");
 
 module.exports = {
   name: "settings",
@@ -16,9 +16,24 @@ module.exports = {
   options: [{
     name: "type",
     description: "The setting you want to change",
-    required: true,
+    required: false,
     type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
-    req: "string"
+    req: "string",
+    choices: [
+      {
+        name: "enable/disable",
+        value: "ed"
+      },
+      {
+        name: "setPrefix",
+        value: "prefix"
+      },
+      {
+        name: "errormsg",
+        value: "errmsg"
+      },
+    ]
+
   }, {
     name: "input",
     description: "Enter the input for the setting you want to change",
@@ -58,16 +73,16 @@ module.exports = {
             data.disabledCommands.splice(index, 1)
             send(message, { content: "Command succesfully enabled" }, true)
           } else {
+            if (command.name == "settings") {
+              return send(message, { content: "The `Settings` command can't be disable." }, true)
+            }
             data.disabledCommands.push(command.name);
             send(message, { content: "Command succesfully disabled" }, true)
           }
           await data.save().catch(e => console.log(e));
 
-
-
           //code if user has not provided command name
         } else if (!input) {
-
 
           if (data.disabledCommands.length === 0) {
             embed.setAuthor({ name: `❌ NO DISABLED COMMANDS FOUND`, })
@@ -84,14 +99,31 @@ module.exports = {
               disables.push(`\`${i + 1}\` ** ${data.disabledCommands[i]}** `)
             }
             if (disables.length < 1) disables.push("None")
+            var toSend = [];
 
-            embed.setAuthor({ name: `Disabled Commands in ${message.guild.name}`, iconURL: author.displayAvatarURL() })
-            embed.setColor(0x39dafa)
-            embed.setDescription(`**Total Disabled Commands: ${data.disabledCommands.length}** \n -------------------------------------------- \n **Disabled Commands: ** \n ${disables.join("\n \n")}`)
-            embed.setThumbnail(message.guild.iconURL())
-            return send(message, {
-              embeds: [embed]
-            }, true);
+            disables.forEach((disabled, i) => {
+              toSend.push(`${disabled} \n`)
+            })
+            // embed.setDescription(disables.join("\n \n"))
+
+
+            toSend.unshift(`**Total Disabled Commands: ${data.disabledCommands.length}** \n -------------------------------------------- \n **Disabled Commands: **`)
+
+            let options2 = {
+              author: `Disabled Commands in ${message.guild.name}`,
+              color: "0x39dafa",
+              args: args[0],
+              buttons: true,
+              thumbnail: message.guild.iconURL(),
+              perpage: 11,
+              authorImage: author.displayAvatarURL()
+            }
+            Utils.createEmbedPages(bot, message, toSend, options2)
+            return
+
+            // return send(message, {
+            //   embeds: [embed]
+            // }, true);
 
           }
         }
@@ -128,16 +160,30 @@ module.exports = {
 
 
       //which functino to run-
-      if (!type) return send(message, { content: "Please re-send the command with the parameters - ed or emsg or setPrefix" }, true)
+      // if (!type) return send(message, { content: "Please re-send the command with the parameters - ed or emsg or setPrefix" }, true)
+      if (!type) {
+        const embed = new Discord.MessageEmbed()
+        embed.setAuthor({ name: `${message.guild.name}'s Settings`, iconURL: message.guild.iconURL() })
+        embed.setThumbnail(message.guild.iconURL({ dynamic: true }))
+        embed.addField("ErrorMessage System", `\`\`\`${data.errorMsgSystem}\`\`\``)
+        embed.addField("Prefix", `\`\`\`${data.prefix}\`\`\``)
+        embed.addField("Total Commands Disabled", `\`\`\`${data.disabledCommands.length}\`\`\``)
+        embed.addField("Disabled Commands", `\`\`\`${data.disabledCommands}\`\`\``)
+        embed.setColor("#1d47c4")
+        embed.setTimestamp()
+        embed.setFooter({ text: author.tag, iconURL: author.displayAvatarURL() })
+        return send(message, { embeds: [embed] }, false)
+      }
+
       if (type.toLowerCase() === "ed" || type.toLowerCase() === "command") {
         ed()
       } else if (type.toLowerCase() == "emsg" || type.toLowerCase() == "errmsg") {
         emsg()
       } else if (type.toLowerCase() == "setprefix" || type.toLowerCase() == "prefix") {
         setPrefix()
+      } else {
+        return send(message, { content: "Please re-send the command with the parameters - ed or emsg or setPrefix" }, true)
       }
-
-
     })
   }
 }

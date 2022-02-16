@@ -57,7 +57,7 @@ module.exports = {
             }, false);
         }
 
-        if (message.type == "DEFAULT" || message.type == "REPLY") {
+        if (message.type !== "APPLICATION_COMMAND") {
             await message.delete().catch(error => console.log(error))
         }
 
@@ -75,6 +75,24 @@ module.exports = {
         }
         //defining member who will get a warn and fetching id of him so member will be id of user mentioned
 
+        var memberRole;
+        try {
+            memberRole = member.roles.highest
+        } catch (error) {
+            return send(message, { content: `Something gone wrong!` }, true)
+        }
+
+        const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
+        // console.log(memberRole, "\n \n \n ", botrole)
+        if (memberRole.rawPosition > botrole.rawPosition) {
+            const embed = new Discord.MessageEmbed()
+            embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to kick the user!")
+            embed.setColor(0xff4a1f)
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, false)
+        }
 
         let reason = options[1]
         if (!reason) {
@@ -94,21 +112,12 @@ module.exports = {
             await mentionedUser.send({
                 embeds: [embed1],
             }).catch(error => {
-                console.log(error)
+                if (error.code === 50007) {
+                    return
+                } else {
+                    console.log(error);
+                }
             })
-            // await bot.users.cache.get(member.id).send({ embeds: [embed1] }).catch(error => {
-            //     // Only log the error if the user's dm is off
-            //     if (error) {
-            //         console.log(error)
-            //         embed2.setColor(0xFF0000)
-            //         embed2.setDescription(`❌ I was unable to dm that User! `);
-            //         blocked = true
-            //         return //message.channel.send(embed2);
-
-            //     }
-            // });
-
-
         }
 
         if (member) {
