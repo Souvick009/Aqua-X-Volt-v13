@@ -24,7 +24,12 @@ module.exports = {
         async function both(user) {
             if (user.mutes[user.mutes.length - 1].duration !== "perm") {
 
-                var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
+                var userid = await message.guild.members.fetch(user.userID).catch(error => {
+                    if (error.code !== 1007) {
+                        console.log(error)
+                    }
+                })
+
                 var member;
                 if (userid === undefined) {
                     member = "Invalid User"
@@ -52,9 +57,14 @@ module.exports = {
 
 
         async function mute(user) {
-            if (user.mutes[user.mutes.length - 1].duratio !== "perm") {
+            if (user.mutes[user.mutes.length - 1].duration !== "perm") {
 
-                var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
+                var userid = await message.guild.members.fetch(user.userID).catch(error => {
+                    if (error.code !== 1007) {
+                        console.log(error)
+                    }
+                })
+
                 var member;
                 if (userid === undefined) {
                     member = "Invalid User"
@@ -80,7 +90,12 @@ module.exports = {
 
         async function timeout(user) {
 
-            var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
+            var userid = await message.guild.members.fetch(user.userID).catch(error => {
+                if (error.code !== 1007) {
+                    console.log(error)
+                }
+            })
+
             var member;
             if (userid === undefined) {
                 member = "Invalid User"
