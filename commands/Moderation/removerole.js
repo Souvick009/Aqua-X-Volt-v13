@@ -60,7 +60,7 @@ module.exports = {
             }, true);
         }
 
-        if (message.type == "DEFAULT" || message.type == "REPLY") {
+        if (message.type !== "APPLICATION_COMMAND") {
             await message.delete().catch(error => console.log(error))
         }
 

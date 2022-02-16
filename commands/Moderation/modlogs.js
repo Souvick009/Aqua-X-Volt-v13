@@ -1,11 +1,8 @@
 const serverUser = require("../../model/serverUser.js")
 const Discord = require("discord.js");
 const ms = require('ms');
-const server = require("../../model/server.js")
-const moment = require('moment')
 const Utils = require("utils-discord");
 const send = require("../../utils/sendMessage.js")
-const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "modlogs",
@@ -22,34 +19,10 @@ module.exports = {
 
         const embed = new Discord.MessageEmbed()
 
-        serverUser.find({
-            serverID: message.guild.id,
-            muteStatus: "Muted"
-        }, async (err, users) => {
-            if (err) console.log(err);
-            if (!users || users.length == 0) {
-                embed.setColor(0xFF0000)
-                embed.setDescription("❌ Currently No Muted Users!")
-                return send(message, { embeds: [embed] }, false);
+        let toSend = []
 
-            }
-            // let currentlyMuted = user.map(e => `${message.guild.members.cache.get(e.userID).user} -> ${ms(e.mutes[e.mutes.length - 1].date + e.mutes[e.mutes.length - 1].duration - Date.now(), { long: true })} Remaining`);
-            await message.channel.sendTyping();
-            let toSend = []
-            var filteredUsers = users.filter(u => u.mutes[u.mutes.length - 1].duration !== "perm")
-            if (!filteredUsers || filteredUsers.length == 0) {
-                embed.setColor(0xFF0000)
-                embed.setDescription("❌ Currently No Muted Users!")
-                return send(message, { embeds: [embed] }, false);
-            }
-
-            // var currentMembers = filteredUsers.filter(async function(user) {
-            //     var totalUsers = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
-            //     var current = totalUsers
-            //     console.log(current)
-            // })
-
-            filteredUsers.forEach(async (user, i) => {
+        async function both(user) {
+            if (user.mutes[user.mutes.length - 1].duration !== "perm") {
 
                 var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
                 var member;
@@ -59,28 +32,122 @@ module.exports = {
                     member = userid.user.tag
                 }
 
+                var type;
                 try {
-                    var dateTime = ms(user.mutes[user.mutes.length - 1].date + user.mutes[user.mutes.length - 1].duration - Date.now(), { long: true })
+                    var dateTime = ms(user.mutes[user.mutes.length - 1].date + user.mutes[user.mutes.length - 1].duration - Date.now(), {
+                        long: true
+                    })
+                    var dateTime2 = ms(userid.communicationDisabledUntil - Date.now(), {
+                        long: true
+                    })
+                    type = "Mute & Timeout"
                 } catch (error) {
                     console.log(error)
                 }
 
-                toSend.push(`**${i + 1}. ${member}** \n Mute | Time Remaining: ${dateTime} \n`)
-
-                // console.log(message.guild.members.fetch(user.userID))
-            })
-            await Utils.delay(1500);
-            // console.log(toSend)
-            let options2 = {
-                title: "Moderation Logs",
-                color: "0x39dafa",
-                args: args[0],
-                buttons: true,
-                thumbnail: message.guild.iconURL(),
-                perpage: 10
+                toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} (Mute) | Time Remaining: ${dateTime2} (Timeout) \n`)
             }
-            Utils.createEmbedPages(bot, message, toSend, options2, author)
 
+        }
+
+
+        async function mute(user) {
+            if (user.mutes[user.mutes.length - 1].duratio !== "perm") {
+
+                var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
+                var member;
+                if (userid === undefined) {
+                    member = "Invalid User"
+                } else {
+                    member = userid.user.tag
+                }
+
+                var type;
+                try {
+                    var dateTime = ms(user.mutes[user.mutes.length - 1].date + user.mutes[user.mutes.length - 1].duration - Date.now(), {
+                        long: true
+                    })
+                    type = "Mute"
+                } catch (error) {
+                    console.log(error)
+                }
+
+                toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} \n`)
+            }
+
+
+        }
+
+        async function timeout(user) {
+
+            var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
+            var member;
+            if (userid === undefined) {
+                member = "Invalid User"
+            } else {
+                member = userid.user.tag
+            }
+
+            var type;
+            try {
+                var dateTime = ms(userid.communicationDisabledUntil - Date.now(), {
+                    long: true
+                })
+                type = "Timeout"
+            } catch (error) {
+                console.log(error)
+            }
+
+
+            toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} \n`)
+            // console.log(message.guild.members.fetch(user.userID))
+
+        }
+
+        // both()
+        // mute()
+        // timeout()
+        serverUser.find({
+            serverID: message.guild.id,
+        }, async (err, users) => {
+            if (err) console.log(err);
+            users.forEach(async (user) => {
+                if (user.muteStatus === "Unmuted" && user.timeoutStatus === "Timedout") {
+                    await timeout(user);
+                }
+                if (user.muteStatus === "Muted" && user.timeoutStatus === "") {
+                    await mute(user);
+                }
+                if (user.muteStatus === "Muted" && user.timeoutStatus === "Timedout") {
+                    await both(user);
+                }
+            })
         })
+
+        await message.channel.sendTyping();
+
+        await Utils.delay(1000);
+
+        if (toSend.length === 0) {
+            embed.setColor(0xFF0000)
+            embed.setDescription("❌ Currently No Muted/Timeouted Users!")
+            return send(message, {
+                embeds: [embed]
+            }, false);
+        }
+        toSend.forEach((val, i) => {
+            toSend[i] = `**${i + 1}. ${toSend[i]}`
+        })
+
+        let options2 = {
+            title: "Moderation Logs",
+            color: "0x39dafa",
+            args: args[0],
+            buttons: true,
+            thumbnail: message.guild.iconURL(),
+            perpage: 10
+        }
+
+        Utils.createEmbedPages(bot, message, toSend, options2, false)
     }
 }

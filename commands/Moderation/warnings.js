@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
 const serverUser = require("../../model/serverUser.js")
 const moment = require('moment')
-const server = require("../../model/server.js")
 const Utils = require("utils-discord");
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
@@ -74,7 +73,7 @@ module.exports = {
 
                 let toSend = []
                 warnings.forEach((warn, i) => {
-                    toSend.push(`\`${i + 1}\` **ID: ${warn.id} | Moderator: ${warn.administrator}** \n ${warn.reason} - ${moment(warn.date).format('LT, LL')} \n`)
+                    toSend.push(`\`${i + 1}\` **Moderator: ${warn.administrator}** \n ${warn.reason} - ${moment(warn.date).format('LT, LL')} \n`)
                 })
                 toSend.unshift(`**Total Warnings Recived: ${warnings.length}** \n -------------------------------------------- \n **Warnings:**`)
                 if (warnings.length < 1) warnings.push("No warnings!")
@@ -89,7 +88,7 @@ module.exports = {
                 var input = options[0]
 
                 let options2 = {
-                    color: "0x39dafa",
+                    color: "#1d47c4",
                     args: input,
                     buttons: true,
                     thumbnail: message.guild.iconURL(),

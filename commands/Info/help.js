@@ -1,7 +1,4 @@
 const Discord = require("discord.js");
-const {
-    stripIndents
-} = require("common-tags");
 const server = require("../../model/server");
 const send = require("../../utils/sendMessage.js")
 

@@ -1,8 +1,6 @@
 const serverUser = require("../../model/serverUser.js")
 const Discord = require("discord.js");
 const ms = require('ms');
-const moment = require('moment')
-const server = require("../../model/server.js")
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 
@@ -75,12 +73,13 @@ module.exports = {
         var person = await getMember(bot, args, options, message, author, false, false, 0, false)
 
         if (!person) return
-
+        if (person.id == "721460877005422634") return send(message, { content: "You can't mute me" }, true)
         if (person.permissions.has("ADMINISTRATOR")) return send(message, { content: "❌ You can not mute an Admin. This person seems to be an Admin of this server." }, true)
+        if (person.id == author.id) return send(message, { content: "You can't mute yourself" }, true)
         const Createdd = Date.now()
 
         let time = options[1];
-        let reason = options[2]
+        let reason = options[2];
 
         if (!time) return send(message, { content: `You need to provide a timelimit.` }, true)
 
@@ -104,6 +103,12 @@ module.exports = {
 
         if (!isNaN(time)) {
             if (time < 60000) return send(message, { content: "Minimum time limit is 1 minute!" }, true)
+        }
+
+        if (!isNaN(time)) {
+            if (time > 1814400000) {
+                return send(message, { content: "Maximum time limit is 21 Days / 3 Weeks!" }, true)
+            }
         }
 
         if (!reason) reason = "None"
@@ -200,6 +205,9 @@ module.exports = {
                 }
 
                 // console.log(time)
+                if (message.type !== "APPLICATION_COMMAND") {
+                    await message.delete().catch(error => console.log(error))
+                }
                 if (time === "perm") {
                     person.roles.add(message.guild.roles.cache.find(role => role.name === 'Muted'))
                     const embed3 = new Discord.MessageEmbed()
@@ -211,13 +219,16 @@ module.exports = {
                     const embed69 = new Discord.MessageEmbed()
                     embed69.setColor(0x00FFFF)
                     embed69.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been muted permanantely in ${message.guild.name}*** | **${reason}**`);
-                    try {
-                        bot.users.cache.get(person.id).send({
-                            embeds: [embed69]
-                        });
-                    } catch (error) {
-                        console.log(error)
-                    }
+                    const dmUser = bot.users.cache.get(person.id)
+                    await dmUser.send({
+                        embeds: [embed420],
+                    }).catch(error => {
+                        if (error.code === 50007) {
+                            return
+                        } else {
+                            console.log(error);
+                        }
+                    })
                 } else {
                     person.roles.add(message.guild.roles.cache.find(role => role.name === 'Muted'))
 
@@ -227,18 +238,16 @@ module.exports = {
                     send(message, {
                         embeds: [embed99]
                     }, false);
-                    const embed420 = new Discord.MessageEmbed()
-                    embed420.setColor(0x00FFFF)
-                    embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been muted for ${ms(time)} in ${message.guild.name}*** | **${reason}**`);
-                    var mentionedUser = bot.users.cache.get(person.id)
-                    await mentionedUser.send({
-                        embeds: [embed420],
-                    }).catch(error => {
-                        console.log(error)
-                    })
-                    // console.log(time)
+
                     setTimeout(async () => {
-                        var guildMember = message.guild.members.fetch(person.id).catch(error => console.log(error))
+
+                        var guildMember
+                        try {
+                            guildMember = await message.guild.members.fetch(person.id).catch(error => console.log(error))
+                        } catch (error) {
+                            guildMember = null
+                        }
+
                         if (!guildMember) {
                             serverUser.findOne({
                                 serverID: message.guild.id,
@@ -250,12 +259,12 @@ module.exports = {
 
                             })
                         } else {
-                            var guildMember = message.guild.members.fetch(person.id).catch(error => console.log(error))
+                            // var guildMember = await message.guild.members.fetch(person.id).catch(error => console.log(error))
                             if (!guildMember) return
-                            if (!person.roles.cache.some(r => r.name === "Muted")) {
+                            if (!guildMember.roles.cache.some(r => r.name === "Muted")) {
                                 serverUser.findOne({
                                     serverID: message.guild.id,
-                                    userID: person.id,
+                                    userID: guildMember.id,
 
                                 }, async (err, user) => {
                                     user.muteStatus = "Unmuted"
@@ -264,14 +273,14 @@ module.exports = {
                                 })
                             } else {
                                 try {
-                                    await person.roles.remove(muterole)
+                                    await guildMember.roles.remove(muterole)
                                 } catch (error) {
                                     console.log(error)
                                 }
 
                                 serverUser.findOne({
                                     serverID: message.guild.id,
-                                    userID: person.id,
+                                    userID: guildMember.id,
 
                                 }, async (err, user) => {
                                     user.muteStatus = "Unmuted"
@@ -281,14 +290,23 @@ module.exports = {
                             }
                         }
                     }, time);
+
+                    const embed420 = new Discord.MessageEmbed()
+                    embed420.setColor(0x00FFFF)
+                    embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been muted for ${ms(time)} in ${message.guild.name}*** | **${reason}**`);
+                    var mentionedUser = bot.users.cache.get(person.id)
+                    await mentionedUser.send({
+                        embeds: [embed420],
+                    }).catch(error => {
+                        if (error.code === 50007) {
+                            return
+                        } else {
+                            console.log(error);
+                        }
+                    })
                 }
-
-
             })
         }
         doMute()
-        if (message.type == "DEFAULT" || message.type == "REPLY") {
-            await message.delete().catch(error => console.log(error))
-        }
     }
 }

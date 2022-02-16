@@ -1,6 +1,5 @@
 const Discord = require("discord.js");
 const send = require("../../utils/sendMessage.js")
-const getMember = require("../../utils/getMember.js");
 
 module.exports = {
     name: "announce",
@@ -17,7 +16,25 @@ module.exports = {
         description: "The type of announcement you want to do",
         required: true,
         type: 3, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
-        req: "string"
+        req: "string",
+        choices: [
+            {
+                name: "everyone",
+                value: "everyone"
+            },
+            {
+                name: "here",
+                value: "here"
+            },
+            {
+                name: "image",
+                value: "image"
+            },
+            {
+                name: "normal",
+                value: "normal"
+            },
+        ]
     }, {
         name: "channel",
         description: "The channel you want to send the announcement",
@@ -70,16 +87,20 @@ module.exports = {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ Check My Permissions. [Missing Permission:- Manage Messages]")
-            return send(message, { embeds: [embed],
-                ephemeral: true }, true)
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
         if (!message.channel.permissionsFor(message.guild.me).has("MANAGE_MESSAGES")) {
             const embed = new Discord.MessageEmbed()
             embed.setColor(0xFF0000)
             embed.setDescription("❌ I don't have permission in this channel! [Missing Permission:- Manage Messages]")
-            return send(message, { embeds: [embed],
-                ephemeral: true }, true)
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, true)
         }
 
         let type22 = options[0]
@@ -97,20 +118,42 @@ module.exports = {
             return send(message, { embeds: [embed09] }, true)
         }
 
+        const notChannel = new Discord.MessageEmbed()
+        notChannel.setColor(0xFF0000)
+        notChannel.setDescription(`:x: ${channel22} channel doesn't exist on this server, please mention the channel or use the channel id and try again.`)
+
         let channel;
         if (message.type == "APPLICATION_COMMAND") {
             try {
                 channel = message.guild.channels.cache.get(channel22)
             } catch {
-                send(message, { content: `${channel22} channel doesn't exist on this server` }, true)
+                return send(message, {
+                    embeds: [notChannel],
+                    ephemeral: true
+                }, true)
             }
         } else {
             try {
                 channel = message.mentions.channels.first() || message.guild.channels.cache.get(channel22)
             } catch {
-                send(message, { content: `${channel22} channel doesn't exist on this server` }, true)
+                return send(message, {
+                    embeds: [notChannel],
+                    ephemeral: true
+                }, true)
             }
         }
+
+        if (!channel) {
+            return send(message, {
+                embeds: [notChannel],
+                ephemeral: true
+            }, true)
+        }
+
+
+        const errorEmbed = new Discord.MessageEmbed()
+        errorEmbed.setColor(0xFF0000)
+        errorEmbed.setDescription(`:x: Something went wrong, please check the command and try again.`)
 
         if (type22.toLowerCase() == "everyone") { // =announce everyone #channel #colourcode message
 
@@ -136,7 +179,14 @@ module.exports = {
             if (message2.length > 1955) return send(message, { content: `Too long message!` }, true)
 
             const embed = new Discord.MessageEmbed()
-            embed.setColor(colorname)
+            try {
+                embed.setColor(colorname)
+            } catch (err) {
+                return send(message, {
+                    embeds: [errorEmbed],
+                    ephemeral: true
+                }, true)
+            }
             embed.setTimestamp()
             embed.setDescription(message2)
             const embeds6924 = new Discord.MessageEmbed()
@@ -168,7 +218,14 @@ module.exports = {
             if (message2.length > 1955) return send(message, { content: `Too long message!` }, true)
 
             const embed = new Discord.MessageEmbed()
-            embed.setColor(colorname)
+            try {
+                embed.setColor(colorname)
+            } catch (err) {
+                return send(message, {
+                    embeds: [errorEmbed],
+                    ephemeral: true
+                }, true)
+            }
             embed.setTimestamp()
             embed.setDescription(message2)
             const embeds6924 = new Discord.MessageEmbed()
@@ -200,7 +257,14 @@ module.exports = {
             if (message2.length > 1955) return send(message, { content: `Too long message!` }, true)
 
             const embed = new Discord.MessageEmbed()
-            embed.setColor(colorname)
+            try {
+                embed.setColor(colorname)
+            } catch (err) {
+                return send(message, {
+                    embeds: [errorEmbed],
+                    ephemeral: true
+                }, true)
+            }
             embed.setTimestamp()
             embed.setDescription(message2)
             const embeds6924 = new Discord.MessageEmbed()
@@ -238,7 +302,14 @@ module.exports = {
                 if (message2.length > 1955) return send(message, { content: `Too long message!` }, true)
 
                 const embed = new Discord.MessageEmbed()
-                embed.setColor(colorname)
+                try {
+                    embed.setColor(colorname)
+                } catch (err) {
+                    return send(message, {
+                        embeds: [errorEmbed],
+                        ephemeral: true
+                    }, true)
+                }
                 embed.setTimestamp()
                 embed.setImage(image)
                 if (message2) {
@@ -251,7 +322,14 @@ module.exports = {
                 channel.send({ embeds: [embed] })
             } else {
                 const embed = new Discord.MessageEmbed()
-                embed.setColor(colorname)
+                try {
+                    embed.setColor(colorname)
+                } catch (err) {
+                    return send(message, {
+                        embeds: [errorEmbed],
+                        ephemeral: true
+                    }, true)
+                }
                 embed.setTimestamp()
                 embed.setImage(image)
                 const embeds6924 = new Discord.MessageEmbed()

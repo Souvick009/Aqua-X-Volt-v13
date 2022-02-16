@@ -1,11 +1,10 @@
-const Discord = require("discord.js");
 const send = require("../../utils/sendMessage.js")
 
 module.exports = {
     name: "coinflip",
     aliases: ["flip"],
     description: "Simple Coinflip Game or You Can Call This Head or Tail Game",
-    usage: "<command | alias>",
+    usage: "=coinflip",
     accessableby: "Anyone",
     category: "Fun",
     example: "=coinflip",

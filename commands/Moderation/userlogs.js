@@ -47,12 +47,17 @@ module.exports = {
                 const RichEmbed = new Discord.MessageEmbed()
                 RichEmbed.setColor(0xFF0000)
                 RichEmbed.setDescription("❌ No mutes!")
-                return send(message, { embeds: [RichEmbed] }, false)
+                return send(message, {
+                    embeds: [RichEmbed]
+                }, false)
             } else if (user) {
 
                 let mutes = user.mutes;
-
-                let toSend = []
+                mutes.reverse()
+                let toSend = {
+                    "mutes": [],
+                    "timeouts": []
+                }
                 mutes.forEach((mute, i) => {
                     // toSend.push(`\`${i + 1}\` ** Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${ms(mute.duration)} - ${mute.type}`)
                     var time;
@@ -67,13 +72,32 @@ module.exports = {
                     }
 
                     if (mute.type) {
-                        toSend.push(`\`${i + 1}\` **Type: ${mute.type}** \n **Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${time} \n`)
+                        toSend.mutes.push(`\`${i + 1}\` **Type: ${mute.type}** \n **Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${time} \n`)
                     } else {
-                        toSend.push(`\`${i + 1}\` **Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${time} \n`)
+                        toSend.mutes.push(`\`${i + 1}\` **Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${time} \n`)
                     }
                 })
+                let timeouts = user.timeouts
+                timeouts.reverse()
+                timeouts.forEach((timeout, i) => {
+                    // var timeoutObj = {
+                    //     administrator: author.tag,
+                    //     reason: reason,
+                    //     duration: time,
+                    //     type: "Added Timeout",
+                    //     date: Createdd
+                    // };
 
-                toSend.unshift(`**Total Mutes/Timeout Recived: ${mutes.length}** \n -------------------------------------------- \n **Logs:**`)
+                    // toSend.push(`\`${i + 1}\` ** Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${ms(mute.duration)} - ${mute.type}`)
+                    var time;
+                    if (timeout.duration === "None") time = "None"
+                    else time = ms(timeout.duration)
+
+
+
+                    toSend.timeouts.push(`\`${i + 1}\` **Type: ${timeout.type}** \n **Moderator: ${timeout.administrator}** \n ${timeout.reason} - ${moment(timeout.date).format('LT, LL')} - ${time} \n`)
+                })
+
 
                 if (mutes.length < 1) mutes.push("No mutes!")
                 let options2 = {
@@ -82,10 +106,10 @@ module.exports = {
                     args: args[0],
                     buttons: true,
                     thumbnail: message.guild.iconURL(),
-                    perpage: 11,
+                    perpage: 10,
                     authorImage: member.user.displayAvatarURL()
                 }
-                Utils.createEmbedPages(bot, message, toSend, options2)
+                Utils.createEmbedPages(bot, message, toSend, options2, true)
 
             }
         })

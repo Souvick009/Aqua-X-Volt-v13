@@ -1,8 +1,5 @@
 const serverUser = require("../../model/serverUser.js")
 const Discord = require("discord.js");
-const ms = require('ms');
-const server = require("../../model/server.js")
-const moment = require('moment')
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 
@@ -73,9 +70,11 @@ module.exports = {
         }
 
         let muterole = message.guild.roles.cache.find(role => role.name === 'Muted');
-        const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
+        if (!muterole) return send(message, { content: "Couldn't find the mute role" }, true);
+        
+        const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt");
         if (!botrole) return send(message, {
-            content: `It seems that my role isn't assigned to me, re-invite me to fix it or make a role named "Aqua X Volt (Beta testing)" and assign it to me.`,
+            content: `It seems that my role isn't assigned to me, re-invite me to fix it or make a role named "Aqua X Volt" and assign it to me.`,
             ephemeral: true
         }, true)
 
@@ -87,8 +86,6 @@ module.exports = {
                 ephemeral: true
             }, true)
         }
-
-        if (!muterole) return send(message, { content: "Couldn't find the mute role" }, true);
         // console.log(person.roles.cache.some(r => r.name === "Muted"))
 
         if (!person.roles.cache.some(r => r.name === "Muted")) return send(message, { content: "The user is already unmuted" }, true)
@@ -153,7 +150,7 @@ module.exports = {
                         embed.setDescription(`<:Bluecheckmark:754538270028726342> **${person.user.tag} has been unmuted!** | ***${reason}***`);
                     }
 
-                    if (message.type == "DEFAULT" || message.type == "REPLY") {
+                    if (message.type !== "APPLICATION_COMMAND") {
                         await message.delete().catch(error => console.log(error))
                     }
                     send(message, {

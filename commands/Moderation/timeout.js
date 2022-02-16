@@ -1,8 +1,6 @@
 const serverUser = require("../../model/serverUser.js")
 const Discord = require("discord.js");
 const ms = require('ms');
-const moment = require('moment')
-const server = require("../../model/server.js")
 const send = require("../../utils/sendMessage.js")
 const getMember = require("../../utils/getMember.js");
 
@@ -12,8 +10,8 @@ module.exports = {
     accessableby: "Manage Messages, Timeout Members",
     description: "Mute a member so they cannot type or speak.",
     category: "Moderation",
-    usage: "=timeout <user/userid> <limit> [reason]",
-    example: "=timeout @Real Warrior 20m Abuse, =timeout @Shander 1d Emoji Spamming",
+    usage: "=timeout <user/userid> <limit> [reason] (For Removing the timeout just replace <limit> with 0)",
+    example: "=timeout @Real Warrior 20m Abuse, =timeout @Shander 1d Emoji Spamming, =timeout @Real Warrior 0 He won't do it again",
     permission: ["MODERATE_MEMBERS"],
     botreq: "Embed Links, Timeout Members, Manage Messages",
     options: [{
@@ -75,7 +73,23 @@ module.exports = {
         var person = await getMember(bot, args, options, message, author, false, false, 0, false)
         // var person = await message.guild.members.fetch(person1.id).catch(error => console.log())
         if (!person) return;
+        if (person.id == "721460877005422634") return send(message, { content: "You can't timeout me" }, true)
         if (person.permissions.has("ADMINISTRATOR")) return send(message, { content: "❌ You can not timeout an Admin. This person seems to be an Admin of this server." }, true)
+        if (person.id == author.id) return send(message, { content: "You can't timeout yourself" }, true)
+
+        var userRole = await person.roles.highest
+
+        const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
+        if (userRole.rawPosition >= botrole.rawPosition) {
+            const embed = new Discord.MessageEmbed()
+            embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to moderate the user!")
+            embed.setColor(0xff4a1f)
+            return send(message, {
+                embeds: [embed],
+                ephemeral: true
+            }, false)
+        }
+
         const Createdd = Date.now()
 
         let time = options[1];
@@ -88,13 +102,15 @@ module.exports = {
 
             if (!reason) reason = "None"
 
+            if (!person.isCommunicationDisabled()) return send(message, { content: `That user is not timedout` }, true)
+
             serverUser.findOne({
                 serverID: message.guild.id,
                 userID: person.id,
 
             }, async (err, user) => {
 
-                var muteObj = {
+                var timeoutObj = {
                     administrator: author.tag,
                     reason: reason,
                     duration: "None",
@@ -108,15 +124,20 @@ module.exports = {
                         serverID: message.guild.id,
                         userID: person.id,
                     })
-                    newUser.mutes.push(muteObj);
+                    newUser.timeouts.push(timeoutObj);
+                    newUser.timeoutStatus = ""
 
                     await newUser.save().catch(e => console.log(e));
                 } else if (user) {
                     //if(user.muteStatus === "Muted") return message.reply("User is already muted. If you think this is a mistake then please report it to us.")
 
-                    user.mutes.push(muteObj);
-
+                    user.timeouts.push(timeoutObj);
+                    user.timeoutStatus = ""
                     await user.save().catch(e => console.log(e));
+                }
+
+                if (message.type !== "APPLICATION_COMMAND") {
+                    await message.delete().catch(error => console.log(error))
                 }
 
                 person.timeout(time, reason)
@@ -134,7 +155,11 @@ module.exports = {
                 await dmUser.send({
                     embeds: [embed420],
                 }).catch(error => {
-                    console.log(error)
+                    if (error.code === 50007) {
+                        return
+                    } else {
+                        console.log(error);
+                    }
                 })
             })
         }
@@ -144,15 +169,22 @@ module.exports = {
             time = ms(time)
 
             if (!time) {
-                return send(message, { content: `Invalid Time` }, true)
+                return send(message, { content: `Invalid Time` }, false)
             }
 
             if (!isNaN(time)) {
-                if (time < 60000) return send(message, { content: `<@${author.id}> Minimum time limit is 1 minute!` }, false)
-                if (time > 604800000) return send(message, { content: `<@${author.id}> Maximum time limit is 1 week!` }, false)
+                if (time < 60000) {
+                    return send(message, { content: `<@${author.id}> Minimum time limit is 1 minute!` }, true)
+                }
+                if (time > 604800000) {
+                    return send(message, { content: `<@${author.id}> Maximum time limit is 1 week!` }, true)
+                }
                 // 604800000
             }
 
+            if (person.isCommunicationDisabled()) {
+                return send(message, { content: `This user is already timed out` }, true)
+            }
             length = ms(time)
             // console.log(time)
 
@@ -164,7 +196,7 @@ module.exports = {
 
             }, async (err, user) => {
 
-                var muteObj = {
+                var timeoutObj = {
                     administrator: author.tag,
                     reason: reason,
                     duration: time,
@@ -178,36 +210,57 @@ module.exports = {
                         serverID: message.guild.id,
                         userID: person.id,
                     })
-                    newUser.mutes.push(muteObj);
-                    newUser.muteStatus = "Unmuted"
+                    newUser.timeouts.push(timeoutObj);
+                    newUser.timeoutStatus = "Timedout"
 
                     await newUser.save().catch(e => console.log(e));
                 } else if (user) {
                     //if(user.muteStatus === "Muted") return message.reply("User is already muted. If you think this is a mistake then please report it to us.")
 
-                    user.mutes.push(muteObj);
-                    user.muteStatus = "Unmuted"
+                    user.timeouts.push(timeoutObj);
+                    user.timeoutStatus = "Timedout"
 
                     await user.save().catch(e => console.log(e));
                 }
+
+                if (message.type !== "APPLICATION_COMMAND") {
+                    await message.delete().catch(error => console.log(error))
+                }
+
                 person.timeout(time, reason)
 
                 const embed99 = new Discord.MessageEmbed()
                 embed99.setColor(0x00FFFF)
-                embed99.setDescription(`<:Bluecheckmark:754538270028726342> ***${person.user.tag} has been timeouted for ${length}*** | **${reason}** `);
+                embed99.setDescription(`<:Bluecheckmark:754538270028726342> ***${person.user.tag} has been timed out for ${length}*** | **${reason}** `);
                 send(message, { embeds: [embed99] }, false);
 
                 const embed420 = new Discord.MessageEmbed()
                 embed420.setColor(0x00FFFF)
-                embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been timeouted for ${length} in ${message.guild.name}*** | **${reason}**`);
+                embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been timed out for ${length} in ${message.guild.name}*** | **${reason}**`);
+
+                setTimeout(async () => {
+                    serverUser.findOne({
+                        serverID: message.guild.id,
+                        userID: person.id,
+                    }, async (err, user) => {
+                        if (user.timeoutStatus == "Timedout") {
+                            user.timeoutStatus = ""
+                        }
+                        await user.save().catch(e => console.log(e));
+
+                    })
+                }, time);
 
                 const dmUser = bot.users.cache.get(person.id)
                 await dmUser.send({
                     embeds: [embed420],
                 }).catch(error => {
-                    console.log(error)
+                    if (error.code === 50007) {
+                        return
+                    } else {
+                        console.log(error);
+                    }
                 })
-
             })
         }
 
@@ -219,11 +272,7 @@ module.exports = {
                 doTimeOut()
             }
         } else {
-            return send(message, {content: `You need to specify the time!`})
-        }
-
-        if (message.type == "DEFAULT" || message.type == "REPLY") {
-            await message.delete().catch(error => console.log(error))
+            return send(message, { content: `You need to specify the time!` }, true)
         }
     }
 }
