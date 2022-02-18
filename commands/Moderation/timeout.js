@@ -239,16 +239,38 @@ module.exports = {
                 embed420.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been timed out for ${length} in ${message.guild.name}*** | **${reason}**`);
 
                 setTimeout(async () => {
-                    serverUser.findOne({
-                        serverID: message.guild.id,
-                        userID: person.id,
-                    }, async (err, user) => {
-                        if (user.timeoutStatus == "Timedout") {
-                            user.timeoutStatus = ""
-                        }
-                        await user.save().catch(e => console.log(e));
+                    var guildMember
+                    try {
+                        guildMember = await message.guild.members.fetch(person.id).catch(error => console.log(error))
+                    } catch (error) {
+                        guildMember = null
+                    }
+                    if (!guildMember) {
+                        serverUser.findOne({
+                            serverID: message.guild.id,
+                            userID: person.id,
+                        }, async (err, user) => {
+                            if (user.timeoutStatus == "Timedout") {
+                                user.timeoutStatus = ""
+                            }
+                            await user.save().catch(e => console.log(e));
 
-                    })
+                        })
+                    } else {
+                        if (guildMember.isCommunicationDisabled()) {
+                            return
+                        }
+                        serverUser.findOne({
+                            serverID: message.guild.id,
+                            userID: guildMember.id,
+                        }, async (err, user) => {
+                            if (user.timeoutStatus == "Timedout") {
+                                user.timeoutStatus = ""
+                            }
+                            await user.save().catch(e => console.log(e));
+
+                        })
+                    }
                 }, time);
 
                 const dmUser = bot.users.cache.get(person.id)

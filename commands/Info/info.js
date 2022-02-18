@@ -28,7 +28,7 @@ module.exports = {
             .setThumbnail(message.guild.iconURL())
             .setTimestamp()
             .setDescription(`AQUA X VOLT`)
-            .addField(`:crown: __Creator/Owner__`, "!—͟͟͞✮〢Real Warrior ☆OP☆#0009")
+            .addField(`:crown: __Creator/Owner__`, "!—͟͟͞✮〢Real Warrior ☆OP☆#2242")
             .addField(`:tools: __Developer Team__`, ":first_place: !—͟͟͞✮〢Real Warrior ☆OP☆#0009\n:second_place: Shander#4911")
             .addField(`:gear: __Version__`, "Version 3.4.9")
             .addField(`⏰ __Uptime__`, `\`${days}\` Days \`${hours}\` Hrs \`${minutes}\` Mins \`${seconds}\` Secs`)

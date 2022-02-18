@@ -89,12 +89,14 @@ module.exports = {
         }
 
         async function timeout(user) {
-
+            // console.log("haan ji rn ho raha")
+            // console.log(user)
             var userid = await message.guild.members.fetch(user.userID).catch(error => {
                 if (error.code !== 1007) {
                     console.log(error)
                 }
             })
+            // console.log("haan ji rn ho raha 2222", userid)
 
             var member;
             if (userid === undefined) {
@@ -105,9 +107,12 @@ module.exports = {
 
             var type;
             try {
+                // console.log(userid.communicationDisabledUntil)
+
                 var dateTime = ms(userid.communicationDisabledUntil - Date.now(), {
                     long: true
                 })
+                // console.log("data time is" + dateTime)
                 type = "Timeout"
             } catch (error) {
                 console.log(error)
@@ -116,7 +121,7 @@ module.exports = {
 
             toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} \n`)
             // console.log(message.guild.members.fetch(user.userID))
-
+            // console.log("1 " + toSend)
         }
 
         // both()
@@ -125,23 +130,27 @@ module.exports = {
         serverUser.find({
             serverID: message.guild.id,
         }, async (err, users) => {
+
             if (err) console.log(err);
             users.forEach(async (user) => {
                 if (user.muteStatus === "Unmuted" && user.timeoutStatus === "Timedout") {
+                    // console.log("timeout hua hain")
                     await timeout(user);
                 }
                 if (user.muteStatus === "Muted" && user.timeoutStatus === "") {
                     await mute(user);
                 }
                 if (user.muteStatus === "Muted" && user.timeoutStatus === "Timedout") {
+
                     await both(user);
                 }
             })
         })
 
         await message.channel.sendTyping();
-
-        await Utils.delay(1000);
+        var timetotake = 3000
+        if (toSend.length > 20) timetotake += 1000
+        await Utils.delay(timetotake);
 
         if (toSend.length === 0) {
             embed.setColor(0xFF0000)

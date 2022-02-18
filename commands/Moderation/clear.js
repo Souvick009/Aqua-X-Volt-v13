@@ -56,7 +56,6 @@ module.exports = {
         }
 
         let count = parseInt(options[0])
-        console.log(options)
         let input = options[1]
         if (!count) return send(message, {
             content: `<@${author.id}> Please tell how many message do you want to delete`
@@ -89,11 +88,7 @@ module.exports = {
                     limit: 100
                 })
                 var totalMessages = [...messages.filter(m => m.author.id === bot.user.id).values()]
-                console.log(count)
                 var newMessages = totalMessages.slice(0, count)
-                newMessages.forEach(m => {
-                    console.log(m.content)
-                })
                 // console.log(typeof(totalMessages))
                 // console.log(Array.from(totalMessages.values).slice(totalMessages.length-count, totalMessages.length))
                 if (!newMessages) return send(message, {
@@ -122,17 +117,11 @@ module.exports = {
 
             } else if (input.toLowerCase() == "invites") {
                 // this command will delete server invites present in the channel (limit - 100)
-                console.log(" count " + count)
-
                 var messages = await message.channel.messages.fetch({
                     limit: 100
                 })
                 var totalMessages = [...messages.filter(m => m.content.toLowerCase().includes("discord.gg/") || m.content.toLowerCase().includes("https://www.discord.gg/")).values()]
-                console.log(count)
                 var newMessages = totalMessages.slice(0, count)
-                newMessages.forEach(m => {
-                    console.log(m.content)
-                })
 
                 if (!newMessages) return send(message, {
                     content: `<@${author.id}>, No server invites found in this channel!`
@@ -168,17 +157,11 @@ module.exports = {
                     iD = user.id
                 }
 
-                console.log(" count " + count)
-
                 var messages = await message.channel.messages.fetch({
                     limit: 100
                 })
                 var totalMessages = [...messages.filter(m => m.author.id === iD).values()]
-                console.log(count)
                 var newMessages = totalMessages.slice(0, count)
-                newMessages.forEach(m => {
-                    console.log(m.content)
-                })
                 // console.log(typeof(totalMessages))
                 // console.log(Array.from(totalMessages.values).slice(totalMessages.length-count, totalMessages.length))
                 if (!newMessages) return send(message, {

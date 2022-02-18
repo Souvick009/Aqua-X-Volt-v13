@@ -221,7 +221,7 @@ module.exports = {
                     embed69.setDescription(`<:Bluecheckmark:754538270028726342> ***You have been muted permanantely in ${message.guild.name}*** | **${reason}**`);
                     const dmUser = bot.users.cache.get(person.id)
                     await dmUser.send({
-                        embeds: [embed420],
+                        embeds: [embed69],
                     }).catch(error => {
                         if (error.code === 50007) {
                             return
