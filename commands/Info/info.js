@@ -29,7 +29,7 @@ module.exports = {
             .setTimestamp()
             .setDescription(`AQUA X VOLT`)
             .addField(`:crown: __Creator/Owner__`, "!—͟͟͞✮〢Real Warrior ☆OP☆#2242")
-            .addField(`:tools: __Developer Team__`, ":first_place: !—͟͟͞✮〢Real Warrior ☆OP☆#0009\n:second_place: Shander#4911")
+            .addField(`:tools: __Developer Team__`, ":first_place: !—͟͟͞✮〢Real Warrior ☆OP☆#2242\n:second_place: Shander#4911")
             .addField(`:gear: __Version__`, "Version 3.4.9")
             .addField(`⏰ __Uptime__`, `\`${days}\` Days \`${hours}\` Hrs \`${minutes}\` Mins \`${seconds}\` Secs`)
             .addField(`Want To Invite Me In Your Server?`, "[Invite Me](https://discord.com/api/oauth2/authorize?client_id=721460877005422634&permissions=1392039259222&scope=bot%20applications.commands)")

@@ -11,16 +11,16 @@ module.exports = {
     name: "userlogs",
     aliases: [],
     accessableby: "Manage Messages",
-    description: "Get mutes for a user.",
-    usage: "=mutes <mention/userid>",
+    description: "Get logs for a user.",
+    usage: "=userlogs <mention/userid>",
     category: "Moderation",
-    example: "=mutes @Real Warrior#5085",
+    example: "=userlogs @Real Warrior#5085",
     cooldown: 5,
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links",
     options: [{
         name: "user",
-        description: "For which user shall I sent mutelogs?",
+        description: "For which user shall I sent userlogs?",
         required: true,
         type: 6, //https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
         req: "string"
@@ -43,14 +43,25 @@ module.exports = {
             userID: member.id
         }, async (err, user) => {
             if (err) console.log(err);
-            if (!user || user.mutes.length == 0) {
+
+
+
+            if (!user) {
                 const RichEmbed = new Discord.MessageEmbed()
                 RichEmbed.setColor(0xFF0000)
                 RichEmbed.setDescription("❌ No mutes!")
                 return send(message, {
                     embeds: [RichEmbed]
                 }, false)
-            } else if (user) {
+            } else if (user.timeouts.length == 0 && user.mutes.length == 0) {
+                const RichEmbed = new Discord.MessageEmbed()
+                RichEmbed.setColor(0xFF0000)
+                RichEmbed.setDescription("❌ No mutes available!")
+                return send(message, {
+                    embeds: [RichEmbed]
+                }, false)
+            }
+            else if (user) {
 
                 let mutes = user.mutes;
                 mutes.reverse()
@@ -59,7 +70,6 @@ module.exports = {
                     "timeouts": []
                 }
                 mutes.forEach((mute, i) => {
-                    // toSend.push(`\`${i + 1}\` ** Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${ms(mute.duration)} - ${mute.type}`)
                     var time;
                     if (mute.duration !== "perm") {
                         if (mute.duration === "None") {
@@ -80,15 +90,6 @@ module.exports = {
                 let timeouts = user.timeouts
                 timeouts.reverse()
                 timeouts.forEach((timeout, i) => {
-                    // var timeoutObj = {
-                    //     administrator: author.tag,
-                    //     reason: reason,
-                    //     duration: time,
-                    //     type: "Added Timeout",
-                    //     date: Createdd
-                    // };
-
-                    // toSend.push(`\`${i + 1}\` ** Moderator: ${mute.administrator}** \n ${mute.reason} - ${moment(mute.date).format('LT, LL')} - ${ms(mute.duration)} - ${mute.type}`)
                     var time;
                     if (timeout.duration === "None") time = "None"
                     else time = ms(timeout.duration)
@@ -106,7 +107,7 @@ module.exports = {
                     args: args[0],
                     buttons: true,
                     thumbnail: message.guild.iconURL(),
-                    perpage: 10,
+                    perpage: 2,
                     authorImage: member.user.displayAvatarURL()
                 }
                 Utils.createEmbedPages(bot, message, toSend, options2, true)

@@ -15,8 +15,7 @@ module.exports = {
     permission: ["MANAGE_MESSAGES"],
     botreq: "Embed Links",
     run: async (bot, message, args, options, author) => {
-
-
+        var count = 0
         const embed = new Discord.MessageEmbed()
 
         let toSend = []
@@ -24,12 +23,7 @@ module.exports = {
         async function both(user) {
             if (user.mutes[user.mutes.length - 1].duration !== "perm") {
 
-                var userid = await message.guild.members.fetch(user.userID).catch(error => {
-                    if (error.code !== 1007) {
-                        console.log(error)
-                    }
-                })
-
+                var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
                 var member;
                 if (userid === undefined) {
                     member = "Invalid User"
@@ -51,6 +45,8 @@ module.exports = {
                 }
 
                 toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} (Mute) | Time Remaining: ${dateTime2} (Timeout) \n`)
+
+                // console.log(message.guild.members.fetch(user.userID))
             }
 
         }
@@ -59,13 +55,12 @@ module.exports = {
         async function mute(user) {
             if (user.mutes[user.mutes.length - 1].duration !== "perm") {
 
-                var userid = await message.guild.members.fetch(user.userID).catch(error => {
-                    if (error.code !== 1007) {
-                        console.log(error)
-                    }
-                })
+                count++
 
+                console.log("yes")
+                var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
                 var member;
+                console.log(userid)
                 if (userid === undefined) {
                     member = "Invalid User"
                 } else {
@@ -89,15 +84,8 @@ module.exports = {
         }
 
         async function timeout(user) {
-            // console.log("haan ji rn ho raha")
-            // console.log(user)
-            var userid = await message.guild.members.fetch(user.userID).catch(error => {
-                if (error.code !== 1007) {
-                    console.log(error)
-                }
-            })
-            // console.log("haan ji rn ho raha 2222", userid)
 
+            var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
             var member;
             if (userid === undefined) {
                 member = "Invalid User"
@@ -107,12 +95,9 @@ module.exports = {
 
             var type;
             try {
-                // console.log(userid.communicationDisabledUntil)
-
                 var dateTime = ms(userid.communicationDisabledUntil - Date.now(), {
                     long: true
                 })
-                // console.log("data time is" + dateTime)
                 type = "Timeout"
             } catch (error) {
                 console.log(error)
@@ -121,57 +106,54 @@ module.exports = {
 
             toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} \n`)
             // console.log(message.guild.members.fetch(user.userID))
-            // console.log("1 " + toSend)
+
         }
 
-        // both()
-        // mute()
-        // timeout()
+        await message.channel.sendTyping();
+        
         serverUser.find({
             serverID: message.guild.id,
         }, async (err, users) => {
-
             if (err) console.log(err);
-            users.forEach(async (user) => {
-                if (user.muteStatus === "Unmuted" && user.timeoutStatus === "Timedout") {
-                    // console.log("timeout hua hain")
-                    await timeout(user);
+            for (let i = 0; i < users.length; i++) {
+                console.log(i)
+                if (users[i].muteStatus === "Unmuted" && users[i].timeoutStatus === "Timedout") {
+                    await timeout(users[i]);
+                    count++
                 }
-                if (user.muteStatus === "Muted" && user.timeoutStatus === "") {
-                    await mute(user);
+                if (users[i].muteStatus === "Muted" && users[i].timeoutStatus === "") {
+                    await mute(users[i]);
                 }
-                if (user.muteStatus === "Muted" && user.timeoutStatus === "Timedout") {
+                if (users[i].muteStatus === "Muted" && users[i].timeoutStatus === "Timedout") {
+                    await both(users[i]);
+                    count++
+                }
+            }
 
-                    await both(user);
+            if (count === toSend.length) {
+                if (toSend.length === 0) {
+                    embed.setColor(0xFF0000)
+                    embed.setDescription("❌ Currently No Muted/Timeouted Users!")
+                    return send(message, {
+                        embeds: [embed]
+                    }, false);
                 }
-            })
+                toSend.forEach((val, i) => {
+                    toSend[i] = `**${i + 1}. ${toSend[i]}`
+
+                })
+
+                let options2 = {
+                    title: "Moderation Logs",
+                    color: "0x39dafa",
+                    args: args[0],
+                    buttons: true,
+                    thumbnail: message.guild.iconURL(),
+                    perpage: 10
+                }
+                Utils.createEmbedPages(bot, message, toSend, options2, false)
+            }
         })
 
-        await message.channel.sendTyping();
-        var timetotake = 3000
-        if (toSend.length > 20) timetotake += 1000
-        await Utils.delay(timetotake);
-
-        if (toSend.length === 0) {
-            embed.setColor(0xFF0000)
-            embed.setDescription("❌ Currently No Muted/Timeouted Users!")
-            return send(message, {
-                embeds: [embed]
-            }, false);
-        }
-        toSend.forEach((val, i) => {
-            toSend[i] = `**${i + 1}. ${toSend[i]}`
-        })
-
-        let options2 = {
-            title: "Moderation Logs",
-            color: "0x39dafa",
-            args: args[0],
-            buttons: true,
-            thumbnail: message.guild.iconURL(),
-            perpage: 10
-        }
-
-        Utils.createEmbedPages(bot, message, toSend, options2, false)
     }
 }
