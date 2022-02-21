@@ -107,7 +107,7 @@ module.exports = {
                     args: args[0],
                     buttons: true,
                     thumbnail: message.guild.iconURL(),
-                    perpage: 2,
+                    perpage: 10,
                     authorImage: member.user.displayAvatarURL()
                 }
                 Utils.createEmbedPages(bot, message, toSend, options2, true)

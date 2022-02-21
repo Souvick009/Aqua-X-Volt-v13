@@ -36,16 +36,21 @@ module.exports = {
                     var dateTime = ms(user.mutes[user.mutes.length - 1].date + user.mutes[user.mutes.length - 1].duration - Date.now(), {
                         long: true
                     })
-                    var dateTime2 = ms(userid.communicationDisabledUntil - Date.now(), {
-                        long: true
-                    })
+                    if (userid !== undefined) {
+                        var dateTime2 = ms(userid.communicationDisabledUntil - Date.now(), {
+                            long: true
+                        })
+                    }
                     type = "Mute & Timeout"
                 } catch (error) {
                     console.log(error)
                 }
 
-                toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} (Mute) | Time Remaining: ${dateTime2} (Timeout) \n`)
-
+                if (userid === undefined) {
+                    toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} \n`)
+                } else {
+                    toSend.push(`${member}** \n ${type} | Time Remaining: ${dateTime} (Mute) | Time Remaining: ${dateTime2} (Timeout) \n`)
+                }
                 // console.log(message.guild.members.fetch(user.userID))
             }
 
@@ -57,10 +62,8 @@ module.exports = {
 
                 count++
 
-                console.log("yes")
                 var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
                 var member;
-                console.log(userid)
                 if (userid === undefined) {
                     member = "Invalid User"
                 } else {
@@ -88,16 +91,22 @@ module.exports = {
             var userid = await message.guild.members.fetch(user.userID).catch(error => console.log(error))
             var member;
             if (userid === undefined) {
-                member = "Invalid User"
+                member = "Invalid User (Member Left)"
             } else {
                 member = userid.user.tag
             }
 
             var type;
             try {
-                var dateTime = ms(userid.communicationDisabledUntil - Date.now(), {
-                    long: true
-                })
+                if (userid !== undefined) {
+                    var dateTime = ms(userid.communicationDisabledUntil - Date.now(), {
+                        long: true
+                    })
+                } else {
+                    var dateTime = ms(user.timeouts[user.timeouts.length - 1].duration + user.timeouts[user.timeouts.length - 1].date - Date.now(), {
+                        long: true
+                    })
+                }
                 type = "Timeout"
             } catch (error) {
                 console.log(error)
@@ -110,13 +119,12 @@ module.exports = {
         }
 
         await message.channel.sendTyping();
-        
+
         serverUser.find({
             serverID: message.guild.id,
         }, async (err, users) => {
             if (err) console.log(err);
             for (let i = 0; i < users.length; i++) {
-                console.log(i)
                 if (users[i].muteStatus === "Unmuted" && users[i].timeoutStatus === "Timedout") {
                     await timeout(users[i]);
                     count++
