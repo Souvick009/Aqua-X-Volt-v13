@@ -56,7 +56,7 @@ module.exports = {
         if (!mentionedUser) return;
 
         let msgtosend = options[1]
-        if (!msgtosend) return send(message, { content: `You Need To Provide A Text To DM Others!` }, true);
+        if (!msgtosend) return send(message, { content: `You Need To Provide A Text To DM Others!` }, false);
 
 
         const dmEmbed = new Discord.MessageEmbed()
