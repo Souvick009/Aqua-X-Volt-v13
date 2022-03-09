@@ -1,6 +1,7 @@
 module.exports = async (bot, Discord, Server, serverUser, youtube, interaction) => {
     var args = []
     if (!interaction.isCommand()) return;
+    if (!interaction.guild.available) return
     const command = bot.commands.get(interaction.commandName)
     if (!command) return;
     Server.findOne({

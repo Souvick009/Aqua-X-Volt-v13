@@ -73,7 +73,7 @@ module.exports = {
 
                 let toSend = []
                 warnings.forEach((warn, i) => {
-                    toSend.push(`\`${i + 1}\` **Moderator: ${warn.administrator}** \n ${warn.reason} - ${moment(warn.date).format('LT, LL')} \n`)
+                    toSend.push(`\`${i + 1}\` **Moderator: ${warn.administrator}** \n ${warn.reason} - ${moment(new Date(warn.date)).format('LT, LL')} \n`)
                 })
                 toSend.unshift(`**Total Warnings Recived: ${warnings.length}** \n -------------------------------------------- \n **Warnings:**`)
                 if (warnings.length < 1) warnings.push("No warnings!")
