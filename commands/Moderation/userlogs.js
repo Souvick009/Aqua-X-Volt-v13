@@ -93,9 +93,6 @@ module.exports = {
                     var time;
                     if (timeout.duration === "None") time = "None"
                     else time = ms(timeout.duration)
-
-
-
                     toSend.timeouts.push(`\`${i + 1}\` **Type: ${timeout.type}** \n **Moderator: ${timeout.administrator}** \n ${timeout.reason} - ${moment(timeout.date).format('LT, LL')} - ${time} \n`)
                 })
 

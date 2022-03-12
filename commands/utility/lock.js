@@ -93,7 +93,7 @@ module.exports = {
 
             if (!channel.permissionsFor(message.guild.me).has("MANAGE_CHANNELS")) return send(message, { content: `❌ I don't have Manage Channels permission in <#${channel.id}>!` }, true)
             if (!channel.permissionsFor(message.guild.roles.everyone).has('SEND_MESSAGES')) return send(message, { content: "Cannot lock an already locked channel" },)
-            await channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
+            await channel.permissionOverwrites.edit(message.guild.roles.everyone, {
                 SEND_MESSAGES: false
             })
             await channel.permissionOverwrites.edit(message.guild.me, {
@@ -105,7 +105,7 @@ module.exports = {
             })
 
             setTimeout(async () => {
-                await channel.permissionOverwrites.edit(message.channel.guild.roles.everyone, {
+                await channel.permissionOverwrites.edit(message.guild.roles.everyone, {
                     SEND_MESSAGES: true
                 })
             }, ms(time));

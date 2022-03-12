@@ -70,7 +70,7 @@ module.exports = {
             } else if (user) {
 
                 let warnings = user.warns;
-
+                warnings.reverse()
                 let toSend = []
                 warnings.forEach((warn, i) => {
                     toSend.push(`\`${i + 1}\` **Moderator: ${warn.administrator}** \n ${warn.reason} - ${moment(new Date(warn.date)).format('LT, LL')} \n`)

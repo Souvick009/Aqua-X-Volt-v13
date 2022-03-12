@@ -151,6 +151,13 @@ module.exports = {
         var finalMuterole = await message.guild.roles.cache.find(role => role.name === 'Muted');
 
         const botrole = message.guild.roles.cache.find(r => r.name == "Aqua X Volt")
+        if (!botrole) {
+            return send(message, {
+                content: "Can't find my role with the name `Aqua X Volt`, Please re-create a role with my name and don't edit my role name.",
+                ephemeral: true,
+            }, true)
+        }
+        
         if (finalMuterole.rawPosition > botrole.rawPosition) {
             const embed = new Discord.MessageEmbed()
             embed.setDescription("Please Check My Permission, Maybe my role isn't higher enough in order to give a role to the user!")
